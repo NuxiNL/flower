@@ -1,6 +1,6 @@
 syntax = 'proto3';
 
-package flower;
+package flower_service;
 
 message Connection {
   int32 socket = 1;
