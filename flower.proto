@@ -1,0 +1,44 @@
+syntax = 'proto3';
+
+package flower;
+
+message Connection {
+  int32 socket = 1;
+  map<string, string> constraints = 2;
+}
+
+// Types specific to servers.
+
+message ServerChannelOptions {
+  map<string, string> additional_constraints = 1;
+}
+
+message ServerChannel {
+  int32 channel = 1;
+}
+
+message AcceptOptions {
+}
+
+service ServerChannelService {
+  rpc CreateNewChannel (ServerChannelOptions) returns (ServerChannel);
+  rpc AcceptIncomingConnections (AcceptOptions) returns (stream Connection);
+}
+
+// Types specific to clients.
+
+message ClientChannelOptions {
+  map<string, string> additional_constraints = 1;
+}
+
+message ClientChannel {
+  int32 channel = 1;
+}
+
+message ConnectOptions {
+}
+
+service ClientChannelService {
+  rpc CreateNewChannel (ClientChannelOptions) returns (ClientChannel);
+  rpc Connect (ConnectOptions) returns (Connection);
+}
