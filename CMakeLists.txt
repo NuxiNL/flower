@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+find_package(Threads REQUIRED)
+
 include (CheckPrototypeDefinition)
 check_prototype_definition(program_main
 	"void program_main(const argdata_t *ad)"
@@ -38,4 +40,4 @@ add_executable(flowerd
 	src/${MAIN_SOURCEFILE}
 	src/flower.h src/flower.cpp
 )
-target_link_libraries(flowerd arpc)
+target_link_libraries(flowerd arpc Threads::Threads)
