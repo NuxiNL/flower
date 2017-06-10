@@ -49,7 +49,9 @@ static std::shared_ptr<arpc::FileDescriptor> create_new_channel(ChannelHandler c
   merge_unique(constraints, additional_constraints);
 
   int fds[2];
-  socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
+    throw std::runtime_error("socketpair() failed");
+  }
   start_new_channel<ChannelHandler>(fds[0], constraints);
   return std::make_shared<arpc::FileDescriptor>(fds[1]);
 }
@@ -78,9 +80,17 @@ class ServerChannelHandler final
       arpc::ServerContext* context,
       const flower_service::ServerChannelOptions* request,
       flower_service::ServerChannel* response) override {
-    response->set_channel(
-        create_new_channel(*this, request->additional_constraints()));
-    return {};
+    try {
+      response->set_channel(
+          create_new_channel(*this, request->additional_constraints()));
+      return {};
+    } catch (overlap_error& e) {
+      return {arpc::StatusCode::PERMISSION_DENIED,
+              "Constraint overlap in item '" + e.item +
+                  "', cannot decrease constraints"};
+    } catch (...) {
+      return {arpc::StatusCode::UNKNOWN, "An exception occurred"};
+    }
   }
 };
 
@@ -107,9 +117,17 @@ class ClientChannelHandler final
       arpc::ServerContext* context,
       const flower_service::ClientChannelOptions* request,
       flower_service::ClientChannel* response) override {
-    response->set_channel(
-        create_new_channel(*this, request->additional_constraints()));
-    return {};
+    try {
+      response->set_channel(
+          create_new_channel(*this, request->additional_constraints()));
+      return {};
+    } catch (overlap_error& e) {
+      return {arpc::StatusCode::PERMISSION_DENIED,
+              "Constraint overlap in item '" + e.item +
+                  "', cannot decrease constraints"};
+    } catch (...) {
+      return {arpc::StatusCode::UNKNOWN, "An exception occurred"};
+    }
   }
 };
 
