@@ -32,7 +32,8 @@ static void start_new_channel(int fd, Container const& constraints) {
       ChannelHandler ch_new(constraints);
       builder.RegisterService(&ch_new);
       std::unique_ptr<arpc::Server> server(builder.Build());
-      server->HandleRequests();
+      while (server->HandleRequest() == 0) {
+      }
     } catch (std::exception& e) {
       std::cerr << "Destroying channel because of an uncaught exception: "
                 << e.what() << std::endl;
@@ -43,8 +44,8 @@ static void start_new_channel(int fd, Container const& constraints) {
 }
 
 template <typename ChannelHandler, typename Container>
-static std::shared_ptr<arpc::FileDescriptor> create_new_channel(ChannelHandler const& ch,
-                              Container const& additional_constraints) {
+static std::shared_ptr<arpc::FileDescriptor> create_new_channel(
+    ChannelHandler const& ch, Container const& additional_constraints) {
   auto constraints = ch.get_constraints();
   merge_unique(constraints, additional_constraints);
 
