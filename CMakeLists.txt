@@ -40,4 +40,4 @@ add_executable(flowerd
 	src/${MAIN_SOURCEFILE}
 	src/flower.h src/flower.cpp
 )
-target_link_libraries(flowerd arpc Threads::Threads)
+target_link_libraries(flowerd arpc argdata Threads::Threads)

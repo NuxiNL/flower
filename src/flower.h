@@ -1,3 +1,3 @@
 #pragma once
 
-int flower_start(int serverfd, int clientfd);
+void flower_start(int serverfd, int clientfd);

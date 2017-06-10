@@ -1,8 +1,9 @@
-#include <program.h>
 #include <argdata.h>
+#include <program.h>
+#include <pthread.h>
+#include <stdlib.h>
 #include <string.h>
 #include "flower.h"
-#include <stdlib.h>
 
 void program_main(const argdata_t* ad) {
   int serverfd = -1;
@@ -30,10 +31,11 @@ void program_main(const argdata_t* ad) {
     }
   }
 
-  if(serverfd < 0 || clientfd < 0) {
+  if (serverfd < 0 || clientfd < 0) {
     fprintf(stderr, "Missing required serverfd / clientfd parameters\n");
     exit(1);
   }
 
-  exit(flower_start(serverfd, clientfd));
+  flower_start(serverfd, clientfd);
+  pthread_exit(nullptr);
 }
