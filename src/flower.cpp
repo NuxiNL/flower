@@ -1,9 +1,11 @@
 #include <sys/socket.h>
+
 #include <iostream>
 #include <map>
 #include <stdexcept>
 #include <string>
 #include <thread>
+
 #include "flower_service.h"
 
 struct overlap_error : public std::runtime_error {
@@ -25,10 +27,12 @@ static void merge_unique(T& l, U const& r) {
 }
 
 template <typename ChannelHandler, typename Container>
-static void start_new_channel(int fd, Container const& constraints) {
-  std::thread thr([fd, constraints]() {
+static void start_new_channel(std::unique_ptr<arpc::FileDescriptor> fd,
+                              Container const& constraints) {
+  // TODO(ed): Is the lifetime of 'constraints' correct?
+  std::thread([ fd{std::move(fd)}, constraints ]() mutable {
     try {
-      arpc::ServerBuilder builder(fd);
+      arpc::ServerBuilder builder(std::move(fd));
       ChannelHandler ch_new(constraints);
       builder.RegisterService(&ch_new);
       std::unique_ptr<arpc::Server> server(builder.Build());
@@ -38,23 +42,27 @@ static void start_new_channel(int fd, Container const& constraints) {
       std::cerr << "Destroying channel because of an uncaught exception: "
                 << e.what() << std::endl;
     }
-    pthread_exit(nullptr);
-  });
-  thr.detach();
+  }).detach();
+}
+
+std::pair<std::unique_ptr<arpc::FileDescriptor>,
+          std::unique_ptr<arpc::FileDescriptor>>
+create_socketpair() {
+  int fds[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0)
+    throw std::runtime_error("socketpair() failed");
+  return std::make_pair(std::make_unique<arpc::FileDescriptor>(fds[0]),
+                        std::make_unique<arpc::FileDescriptor>(fds[1]));
 }
 
 template <typename ChannelHandler, typename Container>
-static std::shared_ptr<arpc::FileDescriptor> create_new_channel(
+static std::unique_ptr<arpc::FileDescriptor> create_new_channel(
     ChannelHandler const& ch, Container const& additional_constraints) {
   auto constraints = ch.get_constraints();
   merge_unique(constraints, additional_constraints);
-
-  int fds[2];
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
-    throw std::runtime_error("socketpair() failed");
-  }
-  start_new_channel<ChannelHandler>(fds[0], constraints);
-  return std::make_shared<arpc::FileDescriptor>(fds[1]);
+  auto sockets = create_socketpair();
+  start_new_channel<ChannelHandler>(std::move(sockets.first), constraints);
+  return std::move(sockets.second);
 }
 
 class ServerChannelHandler final
@@ -135,6 +143,8 @@ class ClientChannelHandler final
 void flower_start(int serverfd, int clientfd) {
   const std::map<std::string, std::string> no_constraints;
 
-  start_new_channel<ServerChannelHandler>(serverfd, no_constraints);
-  start_new_channel<ClientChannelHandler>(clientfd, no_constraints);
+  start_new_channel<ServerChannelHandler>(
+      std::make_unique<arpc::FileDescriptor>(serverfd), no_constraints);
+  start_new_channel<ClientChannelHandler>(
+      std::make_unique<arpc::FileDescriptor>(clientfd), no_constraints);
 }
