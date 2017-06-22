@@ -21,8 +21,8 @@ message AcceptOptions {
 }
 
 service ServerChannelService {
-  rpc CreateNewChannel (ServerChannelOptions) returns (ServerChannel);
-  rpc AcceptIncomingConnections (AcceptOptions) returns (stream Connection);
+  rpc CreateNewChannel(ServerChannelOptions) returns (ServerChannel);
+  rpc AcceptIncomingConnections(AcceptOptions) returns (stream Connection);
 }
 
 // Types specific to clients.
@@ -39,6 +39,6 @@ message ConnectOptions {
 }
 
 service ClientChannelService {
-  rpc CreateNewChannel (ClientChannelOptions) returns (ClientChannel);
-  rpc Connect (ConnectOptions) returns (Connection);
+  rpc CreateNewChannel(ClientChannelOptions) returns (ClientChannel);
+  rpc Connect(ConnectOptions) returns (Connection);
 }
