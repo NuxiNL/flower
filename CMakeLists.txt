@@ -33,7 +33,7 @@ add_custom_command(OUTPUT flower_service.h
 	DEPENDS ${CMAKE_SOURCE_DIR}/flower_service.proto
 )
 
-include_directories(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 
 add_executable(flowerd
 	flower_service.h
@@ -42,6 +42,6 @@ add_executable(flowerd
 )
 target_link_libraries(flowerd arpc argdata Threads::Threads)
 
-include(src/ingress/local_accept/CMakeLists.txt)
-include(src/proto/CMakeLists.txt)
-include(src/resolver/local_getaddrinfo/CMakeLists.txt)
+include(flower/ingress/local_accept/CMakeLists.txt)
+include(flower/proto/CMakeLists.txt)
+include(flower/resolver/local_getaddrinfo/CMakeLists.txt)

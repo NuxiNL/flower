@@ -1,13 +1,13 @@
 syntax = 'proto3';
 
-package flower.resolver;
+package flower.proto.resolver;
 
 message ResolveRequest {
-  map<string, string> labels = 1;
+  map<string, string> in_labels = 1;
 }
 
 message Target {
-  map<string, string> labels = 1;
+  map<string, string> out_labels = 1;
   uint32 weight = 2;
 }
 
