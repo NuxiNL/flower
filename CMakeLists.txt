@@ -42,4 +42,6 @@ add_executable(flowerd
 )
 target_link_libraries(flowerd arpc argdata Threads::Threads)
 
-add_subdirectory(src/ingress/local_accept)
+include(src/ingress/local_accept/CMakeLists.txt)
+include(src/proto/CMakeLists.txt)
+include(src/resolver/local_getaddrinfo/CMakeLists.txt)

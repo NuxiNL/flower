@@ -1,0 +1,21 @@
+syntax = 'proto3';
+
+package flower.resolver;
+
+message ResolveRequest {
+  map<string, string> labels = 1;
+}
+
+message Target {
+  map<string, string> labels = 1;
+  uint32 weight = 2;
+}
+
+message ResolveResponse {
+  repeated Target targets = 1;
+  uint32 max_cache_duration_seconds = 2;
+}
+
+service Resolver {
+  rpc Resolve(ResolveRequest) returns (ResolveResponse);
+}

@@ -1,5 +1,7 @@
 syntax = 'proto3';
 
+// TODO(ed): THIS FILE SHOULD BE DEPRECATED!
+
 package flower_service;
 
 message Connection {

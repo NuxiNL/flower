@@ -1,0 +1,69 @@
+syntax = 'proto3';
+
+package flower.switchboard;
+
+enum Right {
+  CLIENT = 0;
+  EGRESS = 1;
+  INGRESS = 2;
+  RESOLVER = 3;
+  SERVER = 4;
+}
+
+message ConstrainRequest {
+  repeated Right rights = 1;
+  map<string, string> additional_in_constraints = 2;
+  map<string, string> additional_out_constraints = 3;
+}
+
+message ConstrainResponse {
+  fd switchboard = 1;
+}
+
+message ClientConnectRequest {
+}
+
+message ClientConnectResponse {
+  fd server = 1;
+  map<string, string> labels = 2;
+}
+
+message EgressStartRequest {
+}
+
+message EgressStartResponse {
+  fd egress = 1;
+}
+
+message IngressConnectRequest {
+  fd client = 1;
+  map<string, string> labels = 2;
+}
+
+message IngressConnectResponse {
+}
+
+message ResolverStartRequest {
+  repeated string in_labels = 1;
+}
+
+message ResolverStartResponse {
+  fd resolver = 1;
+}
+
+message ServerStartRequest {
+}
+
+message ServerStartResponse {
+  fd server = 1;
+}
+
+service Switchboard {
+  rpc Constrain(ConstrainRequest) returns (ConstrainResponse);
+
+  rpc ClientConnect(ClientConnectRequest) returns (ClientConnectResponse);
+  rpc EgressStart(EgressStartRequest) returns (EgressStartResponse);
+  rpc IngressConnect(IngressConnectRequest) returns (IngressConnectResponse);
+  rpc ResolverStart(ResolverStartRequest) returns (ResolverStartResponse);
+  rpc ServerStart(ServerStartRequest) returns (ServerStartResponse);
+}
