@@ -29,8 +29,8 @@ if(NOT APROTOC_COMMAND)
 endif()
 
 add_custom_command(OUTPUT flower_service.h
-	COMMAND ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower_service.proto >${CMAKE_BINARY_DIR}/flower_service.h
-	DEPENDS ${CMAKE_SOURCE_DIR}/flower_service.proto
+	COMMAND ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/src/flower_service.proto >${CMAKE_BINARY_DIR}/flower_service.h
+	DEPENDS ${CMAKE_SOURCE_DIR}/src/flower_service.proto
 )
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
