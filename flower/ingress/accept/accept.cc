@@ -22,9 +22,9 @@ int main() {
     union {
       sockaddr sa;
       sockaddr_storage ss;
-    } src_address;
-    socklen_t src_address_len = sizeof(src_address);
-    int ret = accept(accept_fd->get(), &src_address.sa, &src_address_len);
+    } client_address;
+    socklen_t client_address_len = sizeof(client_address);
+    int ret = accept(accept_fd->get(), &client_address.sa, &client_address_len);
     if (ret < 0) {
       // TODO(ed): Log errors!
       return 1;
@@ -33,19 +33,19 @@ int main() {
     // Store file descriptors in request and convert peer adress to labels.
     proto::switchboard::IngressConnectRequest request;
     request.set_client(std::make_unique<arpc::FileDescriptor>(ret));
-    util::ConvertSockaddrToLabels(&src_address.sa, src_address_len, "src",
-                                  request.mutable_labels());
+    util::ConvertSockaddrToLabels(&client_address.sa, client_address_len,
+                                  "client", request.mutable_labels());
 
     // Convert local address to labels.
     union {
       sockaddr sa;
       sockaddr_storage ss;
-    } dst_address;
-    socklen_t dst_address_len = sizeof(dst_address);
-    if (getsockname(request.client()->get(), &dst_address.sa,
-                    &dst_address_len) == 0)
-      util::ConvertSockaddrToLabels(&dst_address.sa, dst_address_len, "dst",
-                                    request.mutable_labels());
+    } server_address;
+    socklen_t server_address_len = sizeof(server_address);
+    if (getsockname(request.client()->get(), &server_address.sa,
+                    &server_address_len) == 0)
+      util::ConvertSockaddrToLabels(&server_address.sa, server_address_len,
+                                    "server", request.mutable_labels());
 
     // Submit connection to the switchboard.
     arpc::ClientContext context;

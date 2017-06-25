@@ -21,21 +21,23 @@ class GetaddrinfoResolver final : public proto::resolver::Resolver::Service {
     // Convert string labels.
     const auto& in_labels = request->in_labels();
     const char* hostname = nullptr;
-    if (auto match = in_labels.find("dst_hostname"); match != in_labels.end()) {
+    if (auto match = in_labels.find("server_hostname");
+        match != in_labels.end()) {
       const std::string& str = match->second;
       if (std::find(str.begin(), str.end(), '\0') != str.end())
         return arpc::Status(
             arpc::StatusCode::INVALID_ARGUMENT,
-            "dst_hostname contains a null byte, which is not allowed");
+            "server_hostname contains a null byte, which is not allowed");
       hostname = str.c_str();
     }
     const char* service = nullptr;
-    if (auto match = in_labels.find("dst_service"); match != in_labels.end()) {
+    if (auto match = in_labels.find("server_service");
+        match != in_labels.end()) {
       const std::string& str = match->second;
       if (std::find(str.begin(), str.end(), '\0') != str.end())
         return arpc::Status(
             arpc::StatusCode::INVALID_ARGUMENT,
-            "dst_service contains a null byte, which is not allowed");
+            "server_service contains a null byte, which is not allowed");
       service = str.c_str();
     }
 
@@ -48,8 +50,8 @@ class GetaddrinfoResolver final : public proto::resolver::Resolver::Service {
     // Convert results.
     for (addrinfo* info = result; info != nullptr; info = info->ai_next) {
       proto::resolver::Target* target = response->add_targets();
-      util::ConvertSockaddrToLabels(info->ai_addr, info->ai_addrlen,
-                                    "dst", target->mutable_out_labels());
+      util::ConvertSockaddrToLabels(info->ai_addr, info->ai_addrlen, "server",
+                                    target->mutable_out_labels());
       target->set_weight(1);
     }
     // TODO(ed): This should be configurable.
@@ -70,8 +72,8 @@ int main() {
   // translating hostname/service labels.
   arpc::ClientContext context;
   proto::switchboard::ResolverStartRequest request;
-  request.add_in_labels("dst_hostname");
-  request.add_in_labels("dst_service");
+  request.add_in_labels("server_hostname");
+  request.add_in_labels("server_service");
   proto::switchboard::ResolverStartResponse response;
   arpc::Status status = stub->ResolverStart(&context, request, &response);
   if (!status.ok()) {
