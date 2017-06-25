@@ -17,12 +17,12 @@ message ServerChannel {
   fd channel = 1;
 }
 
-message AcceptOptions {
+message AcceptRequest {
 }
 
 service ServerChannelService {
   rpc CreateNewChannel(ServerChannelOptions) returns (ServerChannel);
-  rpc AcceptIncomingConnections(AcceptOptions) returns (stream Connection);
+  rpc Accept(AcceptRequest) returns (stream Connection);
 }
 
 // Types specific to clients.
@@ -41,4 +41,28 @@ message ConnectOptions {
 service ClientChannelService {
   rpc CreateNewChannel(ClientChannelOptions) returns (ClientChannel);
   rpc Connect(ConnectOptions) returns (Connection);
+}
+
+// Types specific to ingresses.
+
+message IngressChannelOptions {
+  map<string, string> additional_constraints = 1;
+}
+
+message IngressChannel {
+  fd channel = 1;
+}
+
+message IngressSubmitRequest {
+  fd socket = 1;
+  map<string, string> additional_constraints = 2;
+}
+
+// TODO(ed): This should return labels?
+message IngressSubmitResponse {
+}
+
+service IngressChannelService {
+  rpc CreateNewChannel(IngressChannelOptions) returns (IngressChannel);
+  rpc Submit(IngressSubmitRequest) returns (IngressSubmitResponse);
 }

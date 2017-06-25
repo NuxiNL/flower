@@ -77,9 +77,9 @@ class ServerChannelHandler final
     return constraints;
   }
 
-  arpc::Status AcceptIncomingConnections(
+  arpc::Status Accept(
       arpc::ServerContext* context,
-      const flower_service::AcceptOptions* request,
+      const flower_service::AcceptRequest* request,
       arpc::ServerWriter<flower_service::Connection>* writer) override {
     return arpc::Status(arpc::StatusCode::UNIMPLEMENTED,
                         "Operation not provided by this implementation");

@@ -41,3 +41,5 @@ add_executable(flowerd
 	src/flower.h src/flower.cpp
 )
 target_link_libraries(flowerd arpc argdata Threads::Threads)
+
+add_subdirectory(src/ingress/local_accept)
