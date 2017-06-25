@@ -23,6 +23,8 @@ int main() {
   auto channel = arpc::CreateChannel(switchboard_fd);
   auto stub = flower::switchboard::Switchboard::NewStub(channel);
 
+  // Call into the switchboard to register a resolver capable of
+  // translating hostname/service labels.
   arpc::ClientContext context;
   flower::switchboard::ResolverStartRequest request;
   request.add_in_labels("dst_hostname");
@@ -33,7 +35,12 @@ int main() {
     // TODO(ed): Log error.
     return 1;
   }
+  if (!response.resolver()) {
+    // TODO(ed): File descriptor must be present.
+    return 1;
+  }
 
+  // Resolver has been registered. Process incoming requests.
   arpc::ServerBuilder builder(response.resolver());
   GetaddrinfoResolver getaddrinfo_resolver;
   builder.RegisterService(&getaddrinfo_resolver);

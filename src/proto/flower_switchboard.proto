@@ -11,9 +11,19 @@ enum Right {
 }
 
 message ConstrainRequest {
+  // Actions that are permitted to be performed on the new constrained
+  // switchboard connection. These rights must be a subset of the rights
+  // present on the existing switchboard connection.
   repeated Right rights = 1;
-  map<string, string> additional_in_constraints = 2;
-  map<string, string> additional_out_constraints = 3;
+
+  // Labels that must be present on any incoming requests for them to be
+  // received on the new switchboard connection. This affects
+  // EgressStart(), ResolverStart() and ServerStart().
+  map<string, string> additional_in_labels = 2;
+
+  // Labels that are automatically added to any outgoing requests. This
+  // affects ClientConnect() and IngressConnect().
+  map<string, string> additional_out_labels = 3;
 }
 
 message ConstrainResponse {
