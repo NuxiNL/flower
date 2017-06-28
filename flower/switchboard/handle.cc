@@ -2,6 +2,7 @@
 #include <memory>
 #include <set>
 #include <sstream>
+#include <string_view>
 #include <vector>
 
 #include <arpc++/arpc++.h>
