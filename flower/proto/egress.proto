@@ -1,0 +1,15 @@
+syntax = 'proto3';
+
+package flower.proto.egress;
+
+message ConnectRequest {
+  map<string, string> out_labels = 1;
+}
+
+message ConnectResponse {
+  fd server = 1;
+}
+
+service Egress {
+  rpc Connect(ConnectRequest) returns (ConnectResponse);
+}
