@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include <arpc++/arpc++.h>
@@ -18,28 +19,18 @@ class GetaddrinfoResolver final : public proto::resolver::Resolver::Service {
   arpc::Status Resolve(arpc::ServerContext* context,
                        const proto::resolver::ResolveRequest* request,
                        proto::resolver::ResolveResponse* response) override {
-    // Convert string labels.
+    // Extract parameters.
     const auto& in_labels = request->in_labels();
-    const char* hostname = nullptr;
-    if (auto match = in_labels.find("server_hostname");
-        match != in_labels.end()) {
-      const std::string& str = match->second;
-      if (std::find(str.begin(), str.end(), '\0') != str.end())
-        return arpc::Status(
-            arpc::StatusCode::INVALID_ARGUMENT,
-            "server_hostname contains a null byte, which is not allowed");
-      hostname = str.c_str();
-    }
-    const char* service = nullptr;
-    if (auto match = in_labels.find("server_service");
-        match != in_labels.end()) {
-      const std::string& str = match->second;
-      if (std::find(str.begin(), str.end(), '\0') != str.end())
-        return arpc::Status(
-            arpc::StatusCode::INVALID_ARGUMENT,
-            "server_service contains a null byte, which is not allowed");
-      service = str.c_str();
-    }
+    const char* hostname;
+    if (arpc::Status status =
+            ExtractLabel(in_labels, "server_hostname", &hostname);
+        !status.ok())
+      return status;
+    const char* service;
+    if (arpc::Status status =
+            ExtractLabel(in_labels, "server_service", &hostname);
+        !status.ok())
+      return status;
 
     // Invoke getaddrinfo().
     addrinfo* result;
@@ -57,6 +48,27 @@ class GetaddrinfoResolver final : public proto::resolver::Resolver::Service {
     // TODO(ed): This should be configurable.
     response->set_max_cache_duration_seconds(60);
     freeaddrinfo(result);
+    return arpc::Status::OK;
+  }
+
+ private:
+  // Extracts an optional label value from a map of labels, throwing an
+  // error when it cannot be used as a C string.
+  template <typename T>
+  static arpc::Status ExtractLabel(const T& labels, std::string_view label,
+                                   const char** result) {
+    if (auto match = labels.find(label); match != labels.end()) {
+      const std::string& str = match->second;
+      if (std::find(str.begin(), str.end(), '\0') != str.end()) {
+        std::ostringstream ss;
+        ss << "Label " << label
+           << " contains a null byte, which is not allowed";
+        return arpc::Status(arpc::StatusCode::INVALID_ARGUMENT, ss.str());
+      }
+      *result = str.c_str();
+    } else {
+      *result = nullptr;
+    }
     return arpc::Status::OK;
   }
 };
