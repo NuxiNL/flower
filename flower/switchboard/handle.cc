@@ -4,8 +4,15 @@
 #include <vector>
 
 #include <flower/proto/switchboard.h>
+#include <flower/switchboard/directory.h>
 #include <flower/switchboard/handle.h>
+#include <flower/switchboard/label_map.h>
+#include <flower/switchboard/listener.h>
 
+using arpc::FileDescriptor;
+using arpc::ServerContext;
+using arpc::Status;
+using arpc::StatusCode;
 using flower::proto::switchboard::ClientConnectRequest;
 using flower::proto::switchboard::ClientConnectResponse;
 using flower::proto::switchboard::ConstrainRequest;
@@ -22,64 +29,86 @@ using flower::proto::switchboard::ServerStartRequest;
 using flower::proto::switchboard::ServerStartResponse;
 using flower::switchboard::Handle;
 
-arpc::Status Handle::Constrain(arpc::ServerContext* context,
-                               const ConstrainRequest* request,
-                               ConstrainResponse* response) {
+Status Handle::Constrain(ServerContext* context,
+                         const ConstrainRequest* request,
+                         ConstrainResponse* response) {
   std::set<Right> new_rights(request->rights().begin(),
                              request->rights().end());
-  if (arpc::Status status = CheckRights_(new_rights); !status.ok())
+  if (Status status = CheckRights_(new_rights); !status.ok())
     return status;
 
-  return arpc::Status(arpc::StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
 }
 
-arpc::Status Handle::ClientConnect(arpc::ServerContext* context,
-                                   const ClientConnectRequest* request,
-                                   ClientConnectResponse* response) {
-  if (arpc::Status status = CheckRights_({Right::CLIENT_CONNECT}); !status.ok())
+Status Handle::ClientConnect(ServerContext* context,
+                             const ClientConnectRequest* request,
+                             ClientConnectResponse* response) {
+  if (Status status = CheckRights_({Right::CLIENT_CONNECT}); !status.ok())
     return status;
-
-  return arpc::Status(arpc::StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
-}
-
-arpc::Status Handle::EgressStart(arpc::ServerContext* context,
-                                 const EgressStartRequest* request,
-                                 EgressStartResponse* response) {
-  if (arpc::Status status = CheckRights_({Right::EGRESS_START}); !status.ok())
-    return status;
-
-  return arpc::Status(arpc::StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
-}
-
-arpc::Status Handle::IngressConnect(arpc::ServerContext* context,
-                                    const IngressConnectRequest* request,
-                                    IngressConnectResponse* response) {
-  if (arpc::Status status = CheckRights_({Right::INGRESS_CONNECT});
+  auto resolved_labels = response->mutable_labels();
+  std::shared_ptr<Listener> listener;
+  if (Status status =
+          directory_->LookupListener(out_labels_, resolved_labels, &listener);
       !status.ok())
     return status;
-
-  return arpc::Status(arpc::StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  std::shared_ptr<FileDescriptor> fd;
+  if (Status status = listener->ConnectWithoutSocket(*resolved_labels, &fd);
+      !status.ok())
+    return status;
+  response->set_server(std::move(fd));
+  return Status::OK;
 }
 
-arpc::Status Handle::ResolverStart(arpc::ServerContext* context,
-                                   const ResolverStartRequest* request,
-                                   ResolverStartResponse* response) {
-  if (arpc::Status status = CheckRights_({Right::RESOLVER_START}); !status.ok())
+Status Handle::EgressStart(ServerContext* context,
+                           const EgressStartRequest* request,
+                           EgressStartResponse* response) {
+  if (Status status = CheckRights_({Right::EGRESS_START}); !status.ok())
     return status;
 
-  return arpc::Status(arpc::StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
 }
 
-arpc::Status Handle::ServerStart(arpc::ServerContext* context,
-                                 const ServerStartRequest* request,
-                                 ServerStartResponse* response) {
-  if (arpc::Status status = CheckRights_({Right::SERVER_START}); !status.ok())
+Status Handle::IngressConnect(ServerContext* context,
+                              const IngressConnectRequest* request,
+                              IngressConnectResponse* response) {
+  if (!request->client())
+    return Status(StatusCode::INVALID_ARGUMENT,
+                  "Ingress must provide a file descriptor");
+  if (Status status = CheckRights_({Right::INGRESS_CONNECT}); !status.ok())
     return status;
 
-  return arpc::Status(arpc::StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  LabelMap resolved_labels;
+  std::shared_ptr<Listener> listener;
+  if (Status status =
+          directory_->LookupListener(out_labels_, &resolved_labels, &listener);
+      !status.ok())
+    return status;
+  if (Status status =
+          listener->ConnectWithSocket(resolved_labels, request->client());
+      !status.ok())
+    return status;
+  return Status::OK;
 }
 
-arpc::Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
+Status Handle::ResolverStart(ServerContext* context,
+                             const ResolverStartRequest* request,
+                             ResolverStartResponse* response) {
+  if (Status status = CheckRights_({Right::RESOLVER_START}); !status.ok())
+    return status;
+
+  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+}
+
+Status Handle::ServerStart(ServerContext* context,
+                           const ServerStartRequest* request,
+                           ServerStartResponse* response) {
+  if (Status status = CheckRights_({Right::SERVER_START}); !status.ok())
+    return status;
+
+  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+}
+
+Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
   std::vector<Right> missing_rights;
   std::set_difference(requested_rights.begin(), requested_rights.end(),
                       rights_.begin(), rights_.end(),
@@ -90,7 +119,7 @@ arpc::Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
     std::transform(missing_rights.begin(), missing_rights.end(),
                    std::ostream_iterator<const char*>(ss, ", "), Right_Name);
     ss << " } are not present on this handle";
-    return arpc::Status(arpc::StatusCode::PERMISSION_DENIED, ss.str());
+    return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
-  return arpc::Status::OK;
+  return Status::OK;
 }
