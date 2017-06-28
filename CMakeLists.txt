@@ -15,9 +15,9 @@ check_prototype_definition(program_main
 	"program.h"
 	HAVE_PROGRAM_MAIN)
 if(HAVE_PROGRAM_MAIN)
-	set(MAIN_SOURCEFILE "program_main.cpp")
+	set(MAIN_SOURCEFILE "program_main.cc")
 else()
-	set(MAIN_SOURCEFILE "main.cpp")
+	set(MAIN_SOURCEFILE "main.cc")
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
