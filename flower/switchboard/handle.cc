@@ -37,11 +37,41 @@ using flower::switchboard::Handle;
 Status Handle::Constrain(ServerContext* context,
                          const ConstrainRequest* request,
                          ConstrainResponse* response) {
+  // Don't allow extending rights.
   std::set<Right> new_rights(request->rights().begin(),
                              request->rights().end());
   if (Status status = CheckRights_(new_rights); !status.ok())
     return status;
 
+  // Compute new in-labels.
+  LabelMap new_in_labels;
+  LabelSet conflicting_in_labels;
+  MergeLabelMaps(in_labels_, request->additional_in_labels(), &new_in_labels,
+                 &conflicting_in_labels);
+  if (!conflicting_in_labels.empty()) {
+    std::ostringstream ss;
+    ss << "In-labels { ";
+    std::copy(conflicting_in_labels.begin(), conflicting_in_labels.end(),
+              std::ostream_iterator<std::string_view>(ss, ", "));
+    ss << " } are already defined with different values";
+    return Status(StatusCode::PERMISSION_DENIED, ss.str());
+  }
+
+  // Compute new out-labels.
+  LabelMap new_out_labels;
+  LabelSet conflicting_out_labels;
+  MergeLabelMaps(out_labels_, request->additional_out_labels(), &new_out_labels,
+                 &conflicting_out_labels);
+  if (!conflicting_out_labels.empty()) {
+    std::ostringstream ss;
+    ss << "Out-labels { ";
+    std::copy(conflicting_out_labels.begin(), conflicting_out_labels.end(),
+              std::ostream_iterator<std::string_view>(ss, ", "));
+    ss << " } are already defined with different values";
+    return Status(StatusCode::PERMISSION_DENIED, ss.str());
+  }
+
+  // TODO(ed): Construct new handle!
   return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
 }
 
