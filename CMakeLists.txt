@@ -28,19 +28,7 @@ if(NOT APROTOC_COMMAND)
 	message(FATAL_ERROR "Could not find aprotoc, set APROTOC_NAME")
 endif()
 
-add_custom_command(OUTPUT flower_service.h
-	COMMAND ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/src/flower_service.proto >${CMAKE_BINARY_DIR}/flower_service.h
-	DEPENDS ${CMAKE_SOURCE_DIR}/src/flower_service.proto
-)
-
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
-
-add_executable(flowerd
-	flower_service.h
-	src/${MAIN_SOURCEFILE}
-	src/flower.h src/flower.cpp
-)
-target_link_libraries(flowerd arpc argdata Threads::Threads)
 
 include(flower/egress/connect/CMakeLists.txt)
 include(flower/ingress/accept/CMakeLists.txt)
