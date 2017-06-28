@@ -46,30 +46,34 @@ Status Handle::Constrain(ServerContext* context,
 
   // Compute new in-labels.
   LabelMap new_in_labels;
-  LabelVector conflicting_in_labels;
-  MergeLabelMaps(in_labels_, request->additional_in_labels(), &new_in_labels,
-                 &conflicting_in_labels);
-  if (!conflicting_in_labels.empty()) {
-    std::ostringstream ss;
-    ss << "In-labels { ";
-    std::copy(conflicting_in_labels.begin(), conflicting_in_labels.end(),
-              std::ostream_iterator<std::string_view>(ss, ", "));
-    ss << " } are already defined with different values";
-    return Status(StatusCode::PERMISSION_DENIED, ss.str());
+  {
+    LabelVector conflicts;
+    MergeLabelMaps(in_labels_, request->additional_in_labels(), &new_in_labels,
+                   &conflicts);
+    if (!conflicts.empty()) {
+      std::ostringstream ss;
+      ss << "In-labels { ";
+      std::copy(conflicts.begin(), conflicts.end(),
+                std::ostream_iterator<std::string_view>(ss, ", "));
+      ss << " } are already defined with different values";
+      return Status(StatusCode::PERMISSION_DENIED, ss.str());
+    }
   }
 
   // Compute new out-labels.
   LabelMap new_out_labels;
-  LabelVector conflicting_out_labels;
-  MergeLabelMaps(out_labels_, request->additional_out_labels(), &new_out_labels,
-                 &conflicting_out_labels);
-  if (!conflicting_out_labels.empty()) {
-    std::ostringstream ss;
-    ss << "Out-labels { ";
-    std::copy(conflicting_out_labels.begin(), conflicting_out_labels.end(),
-              std::ostream_iterator<std::string_view>(ss, ", "));
-    ss << " } are already defined with different values";
-    return Status(StatusCode::PERMISSION_DENIED, ss.str());
+  {
+    LabelVector conflicts;
+    MergeLabelMaps(out_labels_, request->additional_out_labels(),
+                   &new_out_labels, &conflicts);
+    if (!conflicts.empty()) {
+      std::ostringstream ss;
+      ss << "Out-labels { ";
+      std::copy(conflicts.begin(), conflicts.end(),
+                std::ostream_iterator<std::string_view>(ss, ", "));
+      ss << " } are already defined with different values";
+      return Status(StatusCode::PERMISSION_DENIED, ss.str());
+    }
   }
 
   // TODO(ed): Construct new handle!
