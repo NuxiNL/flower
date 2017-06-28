@@ -34,8 +34,8 @@ class GetaddrinfoResolver final : public proto::resolver::Resolver::Service {
 
     // Invoke getaddrinfo().
     addrinfo* result;
-    int error = getaddrinfo(hostname, service, nullptr, &result);
-    if (error != 0)
+    if (int error = getaddrinfo(hostname, service, nullptr, &result);
+        error != 0)
       return arpc::Status(arpc::StatusCode::NOT_FOUND, gai_strerror(error));
 
     // Convert results.
