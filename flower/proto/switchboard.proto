@@ -3,11 +3,11 @@ syntax = 'proto3';
 package flower.proto.switchboard;
 
 enum Right {
-  CLIENT = 0;
-  EGRESS = 1;
-  INGRESS = 2;
-  RESOLVER = 3;
-  SERVER = 4;
+  CLIENT_CONNECT = 0;
+  EGRESS_START = 1;
+  INGRESS_CONNECT = 2;
+  RESOLVER_START = 3;
+  SERVER_START = 4;
 }
 
 message ConstrainRequest {
