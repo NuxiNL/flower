@@ -20,14 +20,6 @@ else()
 	set(MAIN_SOURCEFILE "main.cpp")
 endif()
 
-set(APROTOC_NAME "aprotoc" CACHE STRING "Name of the aprotoc command")
-find_program(APROTOC_COMMAND ${APROTOC_NAME})
-mark_as_advanced(APROTOC_COMMAND)
-
-if(NOT APROTOC_COMMAND)
-	message(FATAL_ERROR "Could not find aprotoc, set APROTOC_NAME")
-endif()
-
 include_directories(${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 
 include(flower/egress/connect/CMakeLists.txt)
