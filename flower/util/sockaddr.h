@@ -10,6 +10,7 @@
 
 namespace flower {
 namespace util {
+
 template <typename T>
 void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
                              const std::string& prefix, T* map) {
@@ -37,7 +38,8 @@ void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
     (*map)[prefix + "_port"] = port;
   }
 }
-}
-}
+
+}  // namespace util
+}  // namespace flower
 
 #endif
