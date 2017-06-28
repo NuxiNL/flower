@@ -1,13 +1,18 @@
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <vector>
 
+#include <arpc++/arpc++.h>
+
 #include <flower/proto/switchboard.h>
 #include <flower/switchboard/directory.h>
+#include <flower/switchboard/egress_listener.h>
 #include <flower/switchboard/handle.h>
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/listener.h>
+#include <flower/switchboard/server_listener.h>
 
 using arpc::FileDescriptor;
 using arpc::ServerContext;
@@ -64,8 +69,12 @@ Status Handle::EgressStart(ServerContext* context,
                            EgressStartResponse* response) {
   if (Status status = CheckRights_({Right::EGRESS_START}); !status.ok())
     return status;
-
-  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  std::unique_ptr<FileDescriptor> fd;
+  if (Status status = ListenerStart_(std::make_unique<EgressListener>(), &fd);
+      !status.ok())
+    return status;
+  response->set_egress(std::move(fd));
+  return Status::OK;
 }
 
 Status Handle::IngressConnect(ServerContext* context,
@@ -104,8 +113,12 @@ Status Handle::ServerStart(ServerContext* context,
                            ServerStartResponse* response) {
   if (Status status = CheckRights_({Right::SERVER_START}); !status.ok())
     return status;
-
-  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  std::unique_ptr<FileDescriptor> fd;
+  if (Status status = ListenerStart_(std::make_unique<ServerListener>(), &fd);
+      !status.ok())
+    return status;
+  response->set_server(std::move(fd));
+  return Status::OK;
 }
 
 Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
@@ -121,5 +134,16 @@ Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
     ss << " } are not present on this handle";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
+  return Status::OK;
+}
+
+Status Handle::ListenerStart_(std::unique_ptr<Listener> listener,
+                              std::unique_ptr<FileDescriptor>* fd) {
+  if (Status status = listener->Start(fd); !status.ok())
+    return status;
+  if (Status status =
+          directory_->RegisterListener(in_labels_, std::move(listener));
+      !status.ok())
+    return status;
   return Status::OK;
 }

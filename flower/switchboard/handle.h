@@ -12,6 +12,7 @@ namespace flower {
 namespace switchboard {
 
 class Directory;
+class Listener;
 
 class Handle final : public proto::switchboard::Switchboard::Service {
  public:
@@ -53,6 +54,8 @@ class Handle final : public proto::switchboard::Switchboard::Service {
  private:
   arpc::Status CheckRights_(
       const std::set<proto::switchboard::Right>& requested_rights);
+  arpc::Status ListenerStart_(std::unique_ptr<Listener> listener,
+                              std::unique_ptr<arpc::FileDescriptor>* fd);
 
   Directory* const directory_;
   const std::set<proto::switchboard::Right> rights_;

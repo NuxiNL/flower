@@ -15,6 +15,8 @@ class Listener {
   virtual ~Listener() {
   }
 
+  virtual arpc::Status Start(std::unique_ptr<arpc::FileDescriptor>* fd) = 0;
+
   virtual arpc::Status ConnectWithSocket(
       const LabelMap& resolved_labels,
       const std::shared_ptr<arpc::FileDescriptor>& fd) = 0;
