@@ -46,7 +46,7 @@ Status Handle::Constrain(ServerContext* context,
 
   // Compute new in-labels.
   LabelMap new_in_labels;
-  LabelSet conflicting_in_labels;
+  LabelVector conflicting_in_labels;
   MergeLabelMaps(in_labels_, request->additional_in_labels(), &new_in_labels,
                  &conflicting_in_labels);
   if (!conflicting_in_labels.empty()) {
@@ -60,7 +60,7 @@ Status Handle::Constrain(ServerContext* context,
 
   // Compute new out-labels.
   LabelMap new_out_labels;
-  LabelSet conflicting_out_labels;
+  LabelVector conflicting_out_labels;
   MergeLabelMaps(out_labels_, request->additional_out_labels(), &new_out_labels,
                  &conflicting_out_labels);
   if (!conflicting_out_labels.empty()) {

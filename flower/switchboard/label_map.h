@@ -3,17 +3,17 @@
 
 #include <functional>
 #include <map>
-#include <set>
 #include <string>
+#include <vector>
 
 namespace flower {
 namespace switchboard {
 
 typedef std::map<std::string, std::string, std::less<>> LabelMap;
-typedef std::set<std::string, std::less<>> LabelSet;
+typedef std::vector<std::string> LabelVector;
 
 void MergeLabelMaps(const LabelMap& a, const LabelMap& b, LabelMap* merged,
-                    LabelSet* conflicts);
+                    LabelVector* conflicts);
 
 }  // namespace switchboard
 }  // namespace flower
