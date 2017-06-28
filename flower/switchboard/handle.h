@@ -1,6 +1,10 @@
 #ifndef FLOWER_SWITCHBOARD_HANDLE_H
 #define FLOWER_SWITCHBOARD_HANDLE_H
 
+#include <set>
+
+#include <arpc++/arpc++.h>
+
 #include <flower/proto/switchboard.h>
 
 namespace flower {
@@ -33,6 +37,12 @@ class Handle final : public proto::switchboard::Switchboard::Service {
       arpc::ServerContext* context,
       const proto::switchboard::ServerStartRequest* request,
       proto::switchboard::ServerStartResponse* response) override;
+
+ private:
+  arpc::Status CheckRights_(
+      const std::set<proto::switchboard::Right>& requested_rights);
+
+  const std::set<proto::switchboard::Right> rights_;
 };
 
 }  // namespace switchboard
