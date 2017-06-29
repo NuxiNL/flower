@@ -20,7 +20,7 @@ using flower::protocol::switchboard::Switchboard::NewStub;
 using flower::protocol::switchboard::Switchboard::Stub;
 using flower::switchboard::Handle;
 
-TEST(HandleTest, Constrain) {
+TEST(Handle, Constrain) {
   Handle handle(nullptr);
 
   std::shared_ptr<FileDescriptor> connection;
