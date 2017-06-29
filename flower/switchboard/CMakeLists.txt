@@ -11,4 +11,4 @@ add_executable(flower_switchboard
 	flower/proto/server.h
 	flower/proto/switchboard.h
 )
-target_link_libraries(flower_switchboard arpc argdata)
+target_link_libraries(flower_switchboard arpc argdata Threads::Threads)
