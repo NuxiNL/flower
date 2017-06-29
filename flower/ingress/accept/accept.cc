@@ -45,7 +45,7 @@ int main() {
     IngressConnectRequest request;
     request.set_client(std::move(connection));
     ConvertSockaddrToLabels(&client_address.sa, client_address_len, "client",
-                            request.mutable_labels());
+                            request.mutable_out_labels());
 
     // Convert local address to labels.
     union {
@@ -56,7 +56,7 @@ int main() {
     if (getsockname(request.client()->get(), &server_address.sa,
                     &server_address_len) == 0)
       ConvertSockaddrToLabels(&server_address.sa, server_address_len, "server",
-                              request.mutable_labels());
+                              request.mutable_out_labels());
 
     // Submit connection to the switchboard.
     ClientContext context;

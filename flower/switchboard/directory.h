@@ -14,9 +14,10 @@ class Listener;
 
 class Directory {
  public:
-  arpc::Status RegisterListener(const LabelMap& labels,
+  arpc::Status RegisterListener(const LabelMap& in_labels,
                                 std::unique_ptr<Listener> listener);
-  arpc::Status LookupListener(const LabelMap& labels, LabelMap* resolved_labels,
+  arpc::Status LookupListener(const LabelMap& out_labels,
+                              LabelMap* connection_labels,
                               std::shared_ptr<Listener>* listener);
 };
 

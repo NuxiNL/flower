@@ -20,7 +20,7 @@ class GetaddrinfoResolver final : public protocol::resolver::Resolver::Service {
                        const protocol::resolver::ResolveRequest* request,
                        protocol::resolver::ResolveResponse* response) override {
     // Extract parameters.
-    const auto& in_labels = request->in_labels();
+    const auto& in_labels = request->resolve_labels();
     const char* hostname;
     if (arpc::Status status =
             ExtractLabel(in_labels, "server_hostname", &hostname);
@@ -84,8 +84,8 @@ int main() {
   // translating hostname/service labels.
   arpc::ClientContext context;
   protocol::switchboard::ResolverStartRequest request;
-  request.add_in_labels("server_hostname");
-  request.add_in_labels("server_service");
+  request.add_resolve_labels("server_hostname");
+  request.add_resolve_labels("server_service");
   protocol::switchboard::ResolverStartResponse response;
   arpc::Status status = stub->ResolverStart(&context, request, &response);
   if (!status.ok()) {

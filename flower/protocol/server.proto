@@ -4,7 +4,7 @@ package flower.protocol.server;
 
 message ConnectRequest {
   fd client = 1;
-  map<string, string> labels = 2;
+  map<string, string> connection_labels = 2;
 }
 
 message ConnectResponse {

@@ -67,9 +67,15 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
   }
 
   arpc::Status CheckRights_(
-      const std::set<protocol::switchboard::Right>& requested_rights);
-  arpc::Status ListenerStart_(std::unique_ptr<Listener> listener,
-                              std::unique_ptr<arpc::FileDescriptor>* fd);
+      const std::set<protocol::switchboard::Right>& requested_rights) const;
+  arpc::Status GetInLabels_(const LabelMap& additional_labels,
+                            LabelMap* merged_labels) const;
+  arpc::Status GetOutLabels_(const LabelMap& additional_labels,
+                             LabelMap* merged_labels) const;
+
+  arpc::Status ListenerStart_(const LabelMap& in_labels,
+                              std::unique_ptr<Listener> listener,
+                              std::unique_ptr<arpc::FileDescriptor>* fd) const;
 
   Directory* const directory_;
   const std::set<protocol::switchboard::Right> rights_;

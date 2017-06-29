@@ -14,10 +14,10 @@ namespace switchboard {
 class ServerListener final : public Listener {
  public:
   arpc::Status ConnectWithSocket(
-      const LabelMap& resolved_labels,
+      const LabelMap& connection_labels,
       const std::shared_ptr<arpc::FileDescriptor>& fd) override;
   arpc::Status ConnectWithoutSocket(
-      const LabelMap& resolved_labels,
+      const LabelMap& connection_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) override;
 };
 

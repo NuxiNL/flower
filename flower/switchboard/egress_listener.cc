@@ -18,21 +18,21 @@ using flower::protocol::egress::Egress::Stub;
 using flower::switchboard::EgressListener;
 
 Status EgressListener::ConnectWithSocket(
-    const LabelMap& resolved_labels,
+    const LabelMap& connection_labels,
     const std::shared_ptr<FileDescriptor>& fd) {
   return Status(StatusCode::FAILED_PRECONDITION,
                 "Cannot connect an ingress with an egress");
 }
 
 Status EgressListener::ConnectWithoutSocket(
-    const LabelMap& resolved_labels, std::shared_ptr<FileDescriptor>* fd) {
+    const LabelMap& connection_labels, std::shared_ptr<FileDescriptor>* fd) {
   std::lock_guard<std::mutex> lock_(channel_lock_);
   std::unique_ptr<Stub> stub = NewStub(channel_);
 
   // Forward incoming connection to the egress process.
   ClientContext context;
   ConnectRequest request;
-  *request.mutable_labels() = resolved_labels;
+  *request.mutable_connection_labels() = connection_labels;
   ConnectResponse response;
   if (Status status = stub->Connect(&context, request, &response); !status.ok())
     return status;

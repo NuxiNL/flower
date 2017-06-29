@@ -3,7 +3,7 @@ syntax = 'proto3';
 package flower.protocol.resolver;
 
 message ResolveRequest {
-  map<string, string> in_labels = 1;
+  map<string, string> resolve_labels = 1;
 }
 
 message Target {

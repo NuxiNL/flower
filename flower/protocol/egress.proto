@@ -3,7 +3,7 @@ syntax = 'proto3';
 package flower.protocol.egress;
 
 message ConnectRequest {
-  map<string, string> labels = 1;
+  map<string, string> connection_labels = 1;
 }
 
 message ConnectResponse {

@@ -19,10 +19,10 @@ class Listener {
   arpc::Status Start(std::unique_ptr<arpc::FileDescriptor>* fd);
 
   virtual arpc::Status ConnectWithSocket(
-      const LabelMap& resolved_labels,
+      const LabelMap& connection_labels,
       const std::shared_ptr<arpc::FileDescriptor>& fd) = 0;
   virtual arpc::Status ConnectWithoutSocket(
-      const LabelMap& resolved_labels,
+      const LabelMap& connection_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) = 0;
 
  protected:

@@ -28,10 +28,10 @@ TEST(Handle, Constrain) {
     ConstrainRequest request;
     request.add_rights(Right::CLIENT_CONNECT);
     request.add_rights(Right::SERVER_START);
-    auto in_labels = request.mutable_additional_in_labels();
+    auto in_labels = request.mutable_in_labels();
     (*in_labels)["hello"] = "world";
     (*in_labels)["toast"] = "french";
-    auto out_labels = request.mutable_additional_out_labels();
+    auto out_labels = request.mutable_out_labels();
     (*out_labels)["dog"] = "brown";
     (*out_labels)["sheep"] = "white";
 
@@ -64,7 +64,7 @@ TEST(Handle, Constrain) {
   // Input labels cannot be overwritten with different values.
   {
     ConstrainRequest request;
-    auto in_labels = request.mutable_additional_in_labels();
+    auto in_labels = request.mutable_in_labels();
     (*in_labels)["hello"] = "world";
     (*in_labels)["toast"] = "italian";
     (*in_labels)["direction"] = "left";
@@ -84,7 +84,7 @@ TEST(Handle, Constrain) {
   // Output labels cannot be overwritten with different values.
   {
     ConstrainRequest request;
-    auto out_labels = request.mutable_additional_out_labels();
+    auto out_labels = request.mutable_out_labels();
     (*out_labels)["dog"] = "black";
     (*out_labels)["sheep"] = "black";
 

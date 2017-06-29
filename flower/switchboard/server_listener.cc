@@ -20,7 +20,7 @@ using flower::switchboard::ServerListener;
 using flower::util::CreateSocketpair;
 
 Status ServerListener::ConnectWithSocket(
-    const LabelMap& resolved_labels,
+    const LabelMap& connection_labels,
     const std::shared_ptr<FileDescriptor>& fd) {
   std::lock_guard<std::mutex> lock_(channel_lock_);
   std::unique_ptr<Stub> stub = NewStub(channel_);
@@ -29,20 +29,20 @@ Status ServerListener::ConnectWithSocket(
   ClientContext context;
   ConnectRequest request;
   request.set_client(fd);
-  *request.mutable_labels() = resolved_labels;
+  *request.mutable_connection_labels() = connection_labels;
   ConnectResponse response;
   return stub->Connect(&context, request, &response);
 }
 
 Status ServerListener::ConnectWithoutSocket(
-    const LabelMap& resolved_labels, std::shared_ptr<FileDescriptor>* fd) {
+    const LabelMap& connection_labels, std::shared_ptr<FileDescriptor>* fd) {
   // Attempting to create a direct connection between a client and a
   // server. As none of these two parties already possess a socket,
   // allocate a socket pair and hand out both ends.
   std::unique_ptr<FileDescriptor> fd1, fd2;
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
-  if (Status status = ConnectWithSocket(resolved_labels, std::move(fd1));
+  if (Status status = ConnectWithSocket(connection_labels, std::move(fd1));
       !status.ok())
     return status;
   *fd = std::move(fd2);

@@ -19,11 +19,11 @@ message ConstrainRequest {
   // Labels that must be present on any incoming requests for them to be
   // received on the new switchboard connection. This affects
   // EgressStart(), ResolverStart() and ServerStart().
-  map<string, string> additional_in_labels = 2;
+  map<string, string> in_labels = 2;
 
   // Labels that are automatically added to any outgoing requests. This
   // affects ClientConnect() and IngressConnect().
-  map<string, string> additional_out_labels = 3;
+  map<string, string> out_labels = 3;
 }
 
 message ConstrainResponse {
@@ -31,14 +31,16 @@ message ConstrainResponse {
 }
 
 message ClientConnectRequest {
+  map<string, string> out_labels = 1;
 }
 
 message ClientConnectResponse {
   fd server = 1;
-  map<string, string> labels = 2;
+  map<string, string> connection_labels = 2;
 }
 
 message EgressStartRequest {
+  map<string, string> in_labels = 1;
 }
 
 message EgressStartResponse {
@@ -47,14 +49,17 @@ message EgressStartResponse {
 
 message IngressConnectRequest {
   fd client = 1;
-  map<string, string> labels = 2;
+  map<string, string> out_labels = 2;
 }
 
 message IngressConnectResponse {
+  map<string, string> connection_labels = 1;
 }
 
 message ResolverStartRequest {
-  repeated string in_labels = 1;
+  repeated string resolve_labels = 1;
+  map<string, string> in_labels = 2;
+  map<string, string> out_labels = 3;
 }
 
 message ResolverStartResponse {
@@ -62,6 +67,7 @@ message ResolverStartResponse {
 }
 
 message ServerStartRequest {
+  map<string, string> in_labels = 2;
 }
 
 message ServerStartResponse {

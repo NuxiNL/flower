@@ -38,7 +38,7 @@ class ConnectEgress final : public Service {
   Status Connect(ServerContext* context, const ConnectRequest* request,
                  ConnectResponse* response) override {
     // Convert the provided labels to a socket address.
-    const auto& labels = request->labels();
+    const auto& labels = request->connection_labels();
     auto address_family = labels.find("address_family");
     if (address_family == labels.end()) {
       return Status(StatusCode::INVALID_ARGUMENT,

@@ -46,57 +46,32 @@ Status Handle::Constrain(ServerContext* context,
                          const ConstrainRequest* request,
                          ConstrainResponse* response) {
   // Don't allow extending rights.
-  std::set<Right> new_rights(request->rights().begin(),
-                             request->rights().end());
-  if (Status status = CheckRights_(new_rights); !status.ok())
+  std::set<Right> rights(request->rights().begin(), request->rights().end());
+  if (Status status = CheckRights_(rights); !status.ok())
     return status;
-
-  // Compute new in-labels.
-  LabelMap new_in_labels;
-  {
-    LabelVector conflicts;
-    MergeLabelMaps(in_labels_, request->additional_in_labels(), &new_in_labels,
-                   &conflicts);
-    if (!conflicts.empty()) {
-      std::ostringstream ss;
-      ss << "In-labels { ";
-      std::copy(conflicts.begin(), conflicts.end(),
-                ostream_infix_iterator<>(ss, ", "));
-      ss << " } are already defined with different values";
-      return Status(StatusCode::PERMISSION_DENIED, ss.str());
-    }
-  }
-
-  // Compute new out-labels.
-  LabelMap new_out_labels;
-  {
-    LabelVector conflicts;
-    MergeLabelMaps(out_labels_, request->additional_out_labels(),
-                   &new_out_labels, &conflicts);
-    if (!conflicts.empty()) {
-      std::ostringstream ss;
-      ss << "Out-labels { ";
-      std::copy(conflicts.begin(), conflicts.end(),
-                ostream_infix_iterator<>(ss, ", "));
-      ss << " } are already defined with different values";
-      return Status(StatusCode::PERMISSION_DENIED, ss.str());
-    }
-  }
+  LabelMap in_labels;
+  if (Status status = GetInLabels_(request->in_labels(), &in_labels);
+      !status.ok())
+    return status;
+  LabelMap out_labels;
+  if (Status status = GetOutLabels_(request->out_labels(), &out_labels);
+      !status.ok())
+    return status;
 
   // Create a new connection to the switchboard and spawn a worker thread.
   std::unique_ptr<FileDescriptor> fd1, fd2;
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
-  auto new_handle = std::unique_ptr<Handle>(
-      new Handle(directory_, new_rights, new_in_labels, new_out_labels));
+  auto handle = std::unique_ptr<Handle>(
+      new Handle(directory_, rights, in_labels, out_labels));
   // TODO(ed): Deal with thread creation errors!
   // TODO(ed): Place limits on the number of channels?
   // TODO(ed): Switch to something event driven?
   std::thread([
-    connection{std::move(fd1)}, new_handle{std::move(new_handle)}
+    connection{std::move(fd1)}, handle{std::move(handle)}
   ]() mutable {
     ServerBuilder builder(std::move(connection));
-    builder.RegisterService(new_handle.get());
+    builder.RegisterService(handle.get());
     std::shared_ptr<Server> server = builder.Build();
     while (server->HandleRequest() == 0) {
     }
@@ -111,14 +86,19 @@ Status Handle::ClientConnect(ServerContext* context,
                              ClientConnectResponse* response) {
   if (Status status = CheckRights_({Right::CLIENT_CONNECT}); !status.ok())
     return status;
-  auto resolved_labels = response->mutable_labels();
+  LabelMap out_labels;
+  if (Status status = GetOutLabels_(request->out_labels(), &out_labels);
+      !status.ok())
+    return status;
+
+  auto connection_labels = response->mutable_connection_labels();
   std::shared_ptr<Listener> listener;
   if (Status status =
-          directory_->LookupListener(out_labels_, resolved_labels, &listener);
+          directory_->LookupListener(out_labels, connection_labels, &listener);
       !status.ok())
     return status;
   std::shared_ptr<FileDescriptor> fd;
-  if (Status status = listener->ConnectWithoutSocket(*resolved_labels, &fd);
+  if (Status status = listener->ConnectWithoutSocket(*connection_labels, &fd);
       !status.ok())
     return status;
   response->set_server(std::move(fd));
@@ -130,8 +110,14 @@ Status Handle::EgressStart(ServerContext* context,
                            EgressStartResponse* response) {
   if (Status status = CheckRights_({Right::EGRESS_START}); !status.ok())
     return status;
+  LabelMap in_labels;
+  if (Status status = GetInLabels_(request->in_labels(), &in_labels);
+      !status.ok())
+    return status;
+
   std::unique_ptr<FileDescriptor> fd;
-  if (Status status = ListenerStart_(std::make_unique<EgressListener>(), &fd);
+  if (Status status =
+          ListenerStart_(in_labels, std::make_unique<EgressListener>(), &fd);
       !status.ok())
     return status;
   response->set_egress(std::move(fd));
@@ -146,15 +132,19 @@ Status Handle::IngressConnect(ServerContext* context,
                   "Ingress must provide a file descriptor");
   if (Status status = CheckRights_({Right::INGRESS_CONNECT}); !status.ok())
     return status;
+  LabelMap out_labels;
+  if (Status status = GetOutLabels_(request->out_labels(), &out_labels);
+      !status.ok())
+    return status;
 
-  LabelMap resolved_labels;
+  LabelMap connection_labels;
   std::shared_ptr<Listener> listener;
   if (Status status =
-          directory_->LookupListener(out_labels_, &resolved_labels, &listener);
+          directory_->LookupListener(out_labels, &connection_labels, &listener);
       !status.ok())
     return status;
   if (Status status =
-          listener->ConnectWithSocket(resolved_labels, request->client());
+          listener->ConnectWithSocket(connection_labels, request->client());
       !status.ok())
     return status;
   return Status::OK;
@@ -165,6 +155,14 @@ Status Handle::ResolverStart(ServerContext* context,
                              ResolverStartResponse* response) {
   if (Status status = CheckRights_({Right::RESOLVER_START}); !status.ok())
     return status;
+  LabelMap in_labels;
+  if (Status status = GetInLabels_(request->in_labels(), &in_labels);
+      !status.ok())
+    return status;
+  LabelMap out_labels;
+  if (Status status = GetOutLabels_(request->out_labels(), &out_labels);
+      !status.ok())
+    return status;
 
   return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
 }
@@ -174,15 +172,21 @@ Status Handle::ServerStart(ServerContext* context,
                            ServerStartResponse* response) {
   if (Status status = CheckRights_({Right::SERVER_START}); !status.ok())
     return status;
+  LabelMap in_labels;
+  if (Status status = GetInLabels_(request->in_labels(), &in_labels);
+      !status.ok())
+    return status;
+
   std::unique_ptr<FileDescriptor> fd;
-  if (Status status = ListenerStart_(std::make_unique<ServerListener>(), &fd);
+  if (Status status =
+          ListenerStart_(in_labels, std::make_unique<ServerListener>(), &fd);
       !status.ok())
     return status;
   response->set_server(std::move(fd));
   return Status::OK;
 }
 
-Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
+Status Handle::CheckRights_(const std::set<Right>& requested_rights) const {
   std::vector<Right> missing_rights;
   std::set_difference(requested_rights.begin(), requested_rights.end(),
                       rights_.begin(), rights_.end(),
@@ -198,12 +202,43 @@ Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
   return Status::OK;
 }
 
-Status Handle::ListenerStart_(std::unique_ptr<Listener> listener,
-                              std::unique_ptr<FileDescriptor>* fd) {
+Status Handle::GetInLabels_(const LabelMap& additional_labels,
+                            LabelMap* merged_labels) const {
+  LabelVector conflicts;
+  MergeLabelMaps(in_labels_, additional_labels, merged_labels, &conflicts);
+  if (!conflicts.empty()) {
+    std::ostringstream ss;
+    ss << "In-labels { ";
+    std::copy(conflicts.begin(), conflicts.end(),
+              ostream_infix_iterator<>(ss, ", "));
+    ss << " } are already defined with different values";
+    return Status(StatusCode::PERMISSION_DENIED, ss.str());
+  }
+  return Status::OK;
+}
+
+Status Handle::GetOutLabels_(const LabelMap& additional_labels,
+                             LabelMap* merged_labels) const {
+  LabelVector conflicts;
+  MergeLabelMaps(out_labels_, additional_labels, merged_labels, &conflicts);
+  if (!conflicts.empty()) {
+    std::ostringstream ss;
+    ss << "Out-labels { ";
+    std::copy(conflicts.begin(), conflicts.end(),
+              ostream_infix_iterator<>(ss, ", "));
+    ss << " } are already defined with different values";
+    return Status(StatusCode::PERMISSION_DENIED, ss.str());
+  }
+  return Status::OK;
+}
+
+Status Handle::ListenerStart_(const LabelMap& in_labels,
+                              std::unique_ptr<Listener> listener,
+                              std::unique_ptr<FileDescriptor>* fd) const {
   if (Status status = listener->Start(fd); !status.ok())
     return status;
   if (Status status =
-          directory_->RegisterListener(in_labels_, std::move(listener));
+          directory_->RegisterListener(in_labels, std::move(listener));
       !status.ok())
     return status;
   return Status::OK;
