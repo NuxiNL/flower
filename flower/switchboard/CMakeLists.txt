@@ -29,16 +29,3 @@ install(
 	TARGETS flower_switchboard
 	DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
-
-add_executable(
-	flower_switchboard_test
-	flower/switchboard/handle_test.cc
-)
-
-target_link_libraries(
-	flower_switchboard_test
-	flower_switchboard_lib
-	arpc
-	argdata
-	gtest_main
-)

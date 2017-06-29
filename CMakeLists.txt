@@ -31,6 +31,7 @@ include(flower/ingress/accept/CMakeLists.txt)
 include(flower/protocol/CMakeLists.txt)
 include(flower/resolver/getaddrinfo/CMakeLists.txt)
 include(flower/switchboard/CMakeLists.txt)
+include(unittests/CMakeLists.txt)
 
 if(BUILD_TESTS)
   add_subdirectory(contrib/googletest-release-1.8.0/googletest)
