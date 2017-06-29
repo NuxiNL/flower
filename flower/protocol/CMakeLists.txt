@@ -32,5 +32,5 @@ install(
 		flower/protocol/resolver.proto
 		flower/protocol/server.proto
 		flower/protocol/switchboard.proto
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/flower/proto
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/flower/protocol
 )
