@@ -1,4 +1,5 @@
-add_executable(flower_switchboard
+add_executable(
+	flower_switchboard
 	flower/switchboard/${MAIN_SOURCEFILE}
 	flower/switchboard/directory.cc
 	flower/switchboard/egress_listener.cc
@@ -11,4 +12,14 @@ add_executable(flower_switchboard
 	flower/proto/server.h
 	flower/proto/switchboard.h
 )
-target_link_libraries(flower_switchboard arpc argdata Threads::Threads)
+target_link_libraries(
+	flower_switchboard
+	Threads::Threads
+	argdata
+	arpc
+)
+
+install(
+	TARGETS flower_switchboard
+	DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

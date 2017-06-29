@@ -1,5 +1,16 @@
-add_executable(flower_ingress_accept
+add_executable(
+	flower_ingress_accept
 	flower/proto/switchboard.h
 	flower/ingress/accept/accept.cc
 )
-target_link_libraries(flower_ingress_accept arpc argdata)
+
+target_link_libraries(
+	flower_ingress_accept
+	argdata
+	arpc
+)
+
+install(
+	TARGETS flower_ingress_accept
+	DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
