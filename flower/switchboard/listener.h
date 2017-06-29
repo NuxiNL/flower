@@ -2,6 +2,7 @@
 #define FLOWER_SWITCHBOARD_LISTENER_H
 
 #include <memory>
+#include <mutex>
 
 #include <arpc++/arpc++.h>
 
@@ -15,7 +16,7 @@ class Listener {
   virtual ~Listener() {
   }
 
-  virtual arpc::Status Start(std::unique_ptr<arpc::FileDescriptor>* fd) = 0;
+  arpc::Status Start(std::unique_ptr<arpc::FileDescriptor>* fd);
 
   virtual arpc::Status ConnectWithSocket(
       const LabelMap& resolved_labels,
@@ -23,6 +24,10 @@ class Listener {
   virtual arpc::Status ConnectWithoutSocket(
       const LabelMap& resolved_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) = 0;
+
+ protected:
+  std::shared_ptr<arpc::Channel> channel_;
+  std::mutex channel_lock_;
 };
 
 }  // namespace switchboard

@@ -13,8 +13,6 @@ namespace switchboard {
 
 class ServerListener final : public Listener {
  public:
-  arpc::Status Start(std::unique_ptr<arpc::FileDescriptor>* fd) override;
-
   arpc::Status ConnectWithSocket(
       const LabelMap& resolved_labels,
       const std::shared_ptr<arpc::FileDescriptor>& fd) override;

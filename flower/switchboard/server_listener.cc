@@ -1,4 +1,5 @@
 #include <memory>
+#include <mutex>
 
 #include <arpc++/arpc++.h>
 
@@ -12,13 +13,10 @@ using arpc::StatusCode;
 using flower::switchboard::ServerListener;
 using flower::util::CreateSocketpair;
 
-Status ServerListener::Start(std::unique_ptr<FileDescriptor>* fd) {
-  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
-}
-
 Status ServerListener::ConnectWithSocket(
     const LabelMap& resolved_labels,
     const std::shared_ptr<FileDescriptor>& fd) {
+  std::lock_guard<std::mutex> lock_(channel_lock_);
   return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
 }
 
