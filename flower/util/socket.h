@@ -13,8 +13,9 @@ namespace flower {
 namespace util {
 namespace {
 
-arpc::Status CreateSocket(std::unique_ptr<arpc::FileDescriptor>* fd) {
-  int ret = socket(AF_UNIX, SOCK_STREAM, 0);
+arpc::Status CreateSocket(int domain,
+                          std::unique_ptr<arpc::FileDescriptor>* fd) {
+  int ret = socket(domain, SOCK_STREAM, 0);
   if (ret < 0) {
     std::ostringstream ss;
     ss << "Failed to create socket: " << std::strerror(errno);
