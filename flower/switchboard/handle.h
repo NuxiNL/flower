@@ -29,16 +29,6 @@ class Handle final : public proto::switchboard::Switchboard::Service {
         }) {
   }
 
-  // Constructs a handle to a switchboard with limited access.
-  Handle(Directory* directory,
-         const std::set<proto::switchboard::Right>& rights,
-         const LabelMap& in_labels, const LabelMap& out_labels)
-      : directory_(directory),
-        rights_(rights),
-        in_labels_(in_labels),
-        out_labels_(out_labels) {
-  }
-
   arpc::Status Constrain(
       arpc::ServerContext* context,
       const proto::switchboard::ConstrainRequest* request,
@@ -66,6 +56,16 @@ class Handle final : public proto::switchboard::Switchboard::Service {
       proto::switchboard::ServerStartResponse* response) override;
 
  private:
+  // Constructs a handle to a switchboard with limited access.
+  Handle(Directory* directory,
+         const std::set<proto::switchboard::Right>& rights,
+         const LabelMap& in_labels, const LabelMap& out_labels)
+      : directory_(directory),
+        rights_(rights),
+        in_labels_(in_labels),
+        out_labels_(out_labels) {
+  }
+
   arpc::Status CheckRights_(
       const std::set<proto::switchboard::Right>& requested_rights);
   arpc::Status ListenerStart_(std::unique_ptr<Listener> listener,
