@@ -18,7 +18,7 @@ class Handle final : public proto::switchboard::Switchboard::Service {
  public:
   // Constructs a handle to a switchboard directory that provides access
   // without any restrictions.
-  Handle(Directory* directory)
+  explicit Handle(Directory* directory)
       : directory_(directory),
         rights_({
             proto::switchboard::Right::CLIENT_CONNECT,
