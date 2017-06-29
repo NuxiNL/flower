@@ -3,14 +3,17 @@
 
 #include <netdb.h>
 
+#include <algorithm>
 #include <cstring>
 #include <memory>
 #include <sstream>
+#include <string_view>
 
 #include <arpc++/arpc++.h>
 
 #include <flower/proto/egress.h>
 #include <flower/proto/switchboard.h>
+#include <flower/util/sockaddr.h>
 #include <flower/util/socket.h>
 
 using arpc::ClientContext;
@@ -27,6 +30,7 @@ using flower::proto::switchboard::EgressStartResponse;
 using flower::proto::switchboard::EgressStartResponse;
 using flower::proto::switchboard::Switchboard::NewStub;
 using flower::util::CreateSocket;
+using flower::util::InitializeSockaddrUn;
 
 namespace {
 class ConnectEgress final : public Service {
@@ -71,17 +75,13 @@ class ConnectEgress final : public Service {
       if (Status status = ExtractLabel(labels, "server_path", &path);
           !status.ok())
         return status;
-
       union {
         sockaddr sa;
         sockaddr_un sun;
       } address;
-      if (std::strlen(path) >= sizeof(address.sun.sun_path))
-        return Status(StatusCode::INVALID_ARGUMENT,
-                      "Label server_path has a value that is too long");
-      address.sun.sun_family = AF_UNIX;
-      std::strcpy(address.sun.sun_path, path);
-
+      if (Status status = InitializeSockaddrUn(path, &address.sun);
+          !status.ok())
+        return status;
       return MakeConnection(&address.sa, sizeof(address), response);
     } else {
       return Status(StatusCode::INVALID_ARGUMENT,

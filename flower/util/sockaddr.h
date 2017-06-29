@@ -2,11 +2,15 @@
 #define FLOWER_UTIL_SOCKADDR_H
 
 #include <sys/socket.h>
+#include <sys/un.h>
 
 #include <netdb.h>
 
 #include <cstddef>
+#include <cstring>
 #include <string>
+
+#include <arpc++/arpc++.h>
 
 namespace flower {
 namespace util {
@@ -38,6 +42,14 @@ void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
     (*map)[prefix + "_address"] = address;
     (*map)[prefix + "_port"] = port;
   }
+}
+
+arpc::Status InitializeSockaddrUn(const char* path, sockaddr_un* sun) {
+  if (std::strlen(path) >= sizeof(sun->sun_path))
+    return arpc::Status(arpc::StatusCode::INVALID_ARGUMENT, "Path too long");
+  sun->sun_family = AF_UNIX;
+  std::strcpy(sun->sun_path, path);
+  return arpc::Status::OK;
 }
 
 }  // namespace
