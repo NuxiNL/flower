@@ -3,13 +3,18 @@
 
 #include <arpc++/arpc++.h>
 
+#include <flower/proto/server.h>
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/server_listener.h>
 #include <flower/util/socketpair.h>
 
+using arpc::ClientContext;
 using arpc::FileDescriptor;
 using arpc::Status;
 using arpc::StatusCode;
+using flower::proto::server::Server::Stub;
+using flower::proto::server::ConnectRequest;
+using flower::proto::server::ConnectResponse;
 using flower::switchboard::ServerListener;
 using flower::util::CreateSocketpair;
 
@@ -17,7 +22,15 @@ Status ServerListener::ConnectWithSocket(
     const LabelMap& resolved_labels,
     const std::shared_ptr<FileDescriptor>& fd) {
   std::lock_guard<std::mutex> lock_(channel_lock_);
-  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  std::unique_ptr<Stub> stub = proto::server::Server::NewStub(channel_);
+
+  // Forward incoming connection to the server process.
+  ClientContext context;
+  ConnectRequest request;
+  request.set_client(fd);
+  *request.mutable_labels() = resolved_labels;
+  ConnectResponse response;
+  return stub->Connect(&context, request, &response);
 }
 
 Status ServerListener::ConnectWithoutSocket(

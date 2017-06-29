@@ -1,0 +1,15 @@
+syntax = 'proto3';
+
+package flower.proto.server;
+
+message ConnectRequest {
+  fd client = 1;
+  map<string, string> labels = 2;
+}
+
+message ConnectResponse {
+}
+
+service Server {
+  rpc Connect(ConnectRequest) returns (ConnectResponse);
+}
