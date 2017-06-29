@@ -34,4 +34,5 @@ include(flower/switchboard/CMakeLists.txt)
 
 if(BUILD_TESTS)
   add_subdirectory(contrib/googletest-release-1.8.0/googletest)
+  include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 endif(BUILD_TESTS)
