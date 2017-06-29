@@ -15,6 +15,7 @@
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/listener.h>
 #include <flower/switchboard/server_listener.h>
+#include <flower/util/ostream_infix_iterator.h>
 #include <flower/util/socket.h>
 
 using arpc::FileDescriptor;
@@ -39,6 +40,7 @@ using flower::protocol::switchboard::ServerStartRequest;
 using flower::protocol::switchboard::ServerStartResponse;
 using flower::switchboard::Handle;
 using flower::util::CreateSocketpair;
+using flower::util::ostream_infix_iterator;
 
 Status Handle::Constrain(ServerContext* context,
                          const ConstrainRequest* request,
@@ -59,7 +61,7 @@ Status Handle::Constrain(ServerContext* context,
       std::ostringstream ss;
       ss << "In-labels { ";
       std::copy(conflicts.begin(), conflicts.end(),
-                std::ostream_iterator<std::string_view>(ss, ", "));
+                ostream_infix_iterator<>(ss, ", "));
       ss << " } are already defined with different values";
       return Status(StatusCode::PERMISSION_DENIED, ss.str());
     }
@@ -75,7 +77,7 @@ Status Handle::Constrain(ServerContext* context,
       std::ostringstream ss;
       ss << "Out-labels { ";
       std::copy(conflicts.begin(), conflicts.end(),
-                std::ostream_iterator<std::string_view>(ss, ", "));
+                ostream_infix_iterator<>(ss, ", "));
       ss << " } are already defined with different values";
       return Status(StatusCode::PERMISSION_DENIED, ss.str());
     }
@@ -189,7 +191,7 @@ Status Handle::CheckRights_(const std::set<Right>& requested_rights) {
     std::ostringstream ss;
     ss << "Rights { ";
     std::transform(missing_rights.begin(), missing_rights.end(),
-                   std::ostream_iterator<const char*>(ss, ", "), Right_Name);
+                   ostream_infix_iterator<>(ss, ", "), Right_Name);
     ss << " } are not present on this handle";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
