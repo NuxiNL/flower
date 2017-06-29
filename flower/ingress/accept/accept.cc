@@ -17,6 +17,7 @@ using flower::proto::switchboard::IngressConnectResponse;
 using flower::proto::switchboard::Switchboard::Stub;
 using flower::util::AcceptSocketConnection;
 using flower::util::ConvertSockaddrToLabels;
+using flower::proto::switchboard::Switchboard::NewStub;
 
 int main() {
   // TODO(ed): Get file descriptors from somewhere.
@@ -24,8 +25,7 @@ int main() {
   auto accept_fd = std::make_shared<FileDescriptor>(-1);
 
   std::shared_ptr<Channel> channel = CreateChannel(switchboard_fd);
-  std::unique_ptr<Stub> stub =
-      flower::proto::switchboard::Switchboard::NewStub(channel);
+  std::unique_ptr<Stub> stub = NewStub(channel);
   for (;;) {
     // Accept an incoming connection.
     union {
