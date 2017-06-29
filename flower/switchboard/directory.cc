@@ -6,8 +6,8 @@ using flower::switchboard::Listener;
 using flower::switchboard::Directory;
 using flower::switchboard::LabelMap;
 
-arpc::Status Directory::RegisterListener(const LabelMap& labels,
-                                         std::unique_ptr<Listener> listener) {
+Status Directory::RegisterListener(const LabelMap& labels,
+                                   std::unique_ptr<Listener> listener) {
   return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
 }
 
