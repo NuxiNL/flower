@@ -12,6 +12,7 @@ add_executable(
 	flower/proto/server.h
 	flower/proto/switchboard.h
 )
+
 target_link_libraries(
 	flower_switchboard
 	Threads::Threads
