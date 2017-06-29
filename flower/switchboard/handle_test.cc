@@ -105,5 +105,24 @@ TEST(Handle, Constrain) {
         status.error_message());
   }
 
-  // TODO(ed): Add more tests!
+  // Sticking to the rules allows us to constrain.
+  {
+    ConstrainRequest request;
+    request.add_rights(Right::CLIENT_CONNECT);
+    auto in_labels = request.mutable_in_labels();
+    (*in_labels)["hello"] = "world";
+    (*in_labels)["pasta"] = "italian";
+    auto out_labels = request.mutable_out_labels();
+    (*out_labels)["dog"] = "brown";
+    (*out_labels)["fish"] = "orange";
+
+    auto channel = CreateChannel(connection);
+    std::unique_ptr<Stub> stub = NewStub(channel);
+    ClientContext context;
+    ConstrainResponse response;
+    EXPECT_TRUE(stub->Constrain(&context, request, &response).ok());
+    EXPECT_TRUE(response.switchboard());
+  }
 }
+
+// TODO(ed): Add tests for other operations.
