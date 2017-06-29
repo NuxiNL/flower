@@ -3,7 +3,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/egress.h>
+#include <flower/proto/egress.ad.h>
 #include <flower/switchboard/egress_listener.h>
 #include <flower/switchboard/label_map.h>
 

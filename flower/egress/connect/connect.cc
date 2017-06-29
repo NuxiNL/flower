@@ -11,8 +11,8 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/egress.h>
-#include <flower/proto/switchboard.h>
+#include <flower/proto/egress.ad.h>
+#include <flower/proto/switchboard.ad.h>
 #include <flower/util/sockaddr.h>
 #include <flower/util/socket.h>
 

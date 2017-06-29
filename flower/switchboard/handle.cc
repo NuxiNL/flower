@@ -7,7 +7,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/switchboard.h>
+#include <flower/proto/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
 #include <flower/switchboard/egress_listener.h>
 #include <flower/switchboard/handle.h>

@@ -6,23 +6,23 @@ if(NOT APROTOC_COMMAND)
 endif()
 
 add_custom_command(
-	OUTPUT flower/proto/egress.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/egress.proto >${CMAKE_BINARY_DIR}/flower/proto/egress.h
+	OUTPUT flower/proto/egress.ad.h
+	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/egress.proto >${CMAKE_BINARY_DIR}/flower/proto/egress.ad.h
 	DEPENDS ${CMAKE_SOURCE_DIR}/flower/proto/egress.proto
 )
 add_custom_command(
-	OUTPUT flower/proto/resolver.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/resolver.proto >${CMAKE_BINARY_DIR}/flower/proto/resolver.h
+	OUTPUT flower/proto/resolver.ad.h
+	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/resolver.proto >${CMAKE_BINARY_DIR}/flower/proto/resolver.ad.h
 	DEPENDS ${CMAKE_SOURCE_DIR}/flower/proto/resolver.proto
 )
 add_custom_command(
-	OUTPUT flower/proto/server.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/server.proto >${CMAKE_BINARY_DIR}/flower/proto/server.h
+	OUTPUT flower/proto/server.ad.h
+	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/server.proto >${CMAKE_BINARY_DIR}/flower/proto/server.ad.h
 	DEPENDS ${CMAKE_SOURCE_DIR}/flower/proto/server.proto
 )
 add_custom_command(
-	OUTPUT flower/proto/switchboard.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/switchboard.proto >${CMAKE_BINARY_DIR}/flower/proto/switchboard.h
+	OUTPUT flower/proto/switchboard.ad.h
+	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/proto && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/proto/switchboard.proto >${CMAKE_BINARY_DIR}/flower/proto/switchboard.ad.h
 	DEPENDS ${CMAKE_SOURCE_DIR}/flower/proto/switchboard.proto
 )
 

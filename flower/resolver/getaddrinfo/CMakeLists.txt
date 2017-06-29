@@ -1,7 +1,7 @@
 add_executable(
 	flower_resolver_getaddrinfo
-	flower/proto/resolver.h
-	flower/proto/switchboard.h
+	flower/proto/resolver.ad.h
+	flower/proto/switchboard.ad.h
 	flower/resolver/getaddrinfo/getaddrinfo.cc
 )
 

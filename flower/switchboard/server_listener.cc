@@ -3,7 +3,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/server.h>
+#include <flower/proto/server.ad.h>
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/server_listener.h>
 #include <flower/util/socket.h>

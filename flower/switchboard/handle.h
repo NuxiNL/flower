@@ -5,7 +5,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/switchboard.h>
+#include <flower/proto/switchboard.ad.h>
 #include <flower/switchboard/label_map.h>
 
 namespace flower {

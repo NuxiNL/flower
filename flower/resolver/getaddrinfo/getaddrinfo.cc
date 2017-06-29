@@ -7,8 +7,8 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/resolver.h>
-#include <flower/proto/switchboard.h>
+#include <flower/proto/resolver.ad.h>
+#include <flower/proto/switchboard.ad.h>
 #include <flower/util/sockaddr.h>
 
 using namespace flower;
