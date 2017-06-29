@@ -16,6 +16,20 @@ class Listener;
 
 class Handle final : public proto::switchboard::Switchboard::Service {
  public:
+  // Constructs a handle to a switchboard directory that provides access
+  // without any restrictions.
+  Handle(Directory* directory)
+      : directory_(directory),
+        rights_({
+            proto::switchboard::Right::CLIENT_CONNECT,
+            proto::switchboard::Right::EGRESS_START,
+            proto::switchboard::Right::INGRESS_CONNECT,
+            proto::switchboard::Right::RESOLVER_START,
+            proto::switchboard::Right::SERVER_START,
+        }) {
+  }
+
+  // Constructs a handle to a switchboard with limited access.
   Handle(Directory* directory,
          const std::set<proto::switchboard::Right>& rights,
          const LabelMap& in_labels, const LabelMap& out_labels)
