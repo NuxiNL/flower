@@ -28,7 +28,7 @@ Status EgressListener::ConnectWithoutSocket(
   std::lock_guard<std::mutex> lock_(channel_lock_);
   std::unique_ptr<Stub> stub = proto::egress::Egress::NewStub(channel_);
 
-  // Forward incoming connection to the server process.
+  // Forward incoming connection to the egress process.
   ClientContext context;
   ConnectRequest request;
   *request.mutable_labels() = resolved_labels;
