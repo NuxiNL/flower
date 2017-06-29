@@ -8,7 +8,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/switchboard.ad.h>
+#include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
 #include <flower/switchboard/egress_listener.h>
 #include <flower/switchboard/handle.h>
@@ -23,20 +23,20 @@ using arpc::ServerBuilder;
 using arpc::ServerContext;
 using arpc::Status;
 using arpc::StatusCode;
-using flower::proto::switchboard::ClientConnectRequest;
-using flower::proto::switchboard::ClientConnectResponse;
-using flower::proto::switchboard::ConstrainRequest;
-using flower::proto::switchboard::ConstrainResponse;
-using flower::proto::switchboard::EgressStartRequest;
-using flower::proto::switchboard::EgressStartResponse;
-using flower::proto::switchboard::IngressConnectRequest;
-using flower::proto::switchboard::IngressConnectResponse;
-using flower::proto::switchboard::ResolverStartRequest;
-using flower::proto::switchboard::ResolverStartResponse;
-using flower::proto::switchboard::Right;
-using flower::proto::switchboard::Right_Name;
-using flower::proto::switchboard::ServerStartRequest;
-using flower::proto::switchboard::ServerStartResponse;
+using flower::protocol::switchboard::ClientConnectRequest;
+using flower::protocol::switchboard::ClientConnectResponse;
+using flower::protocol::switchboard::ConstrainRequest;
+using flower::protocol::switchboard::ConstrainResponse;
+using flower::protocol::switchboard::EgressStartRequest;
+using flower::protocol::switchboard::EgressStartResponse;
+using flower::protocol::switchboard::IngressConnectRequest;
+using flower::protocol::switchboard::IngressConnectResponse;
+using flower::protocol::switchboard::ResolverStartRequest;
+using flower::protocol::switchboard::ResolverStartResponse;
+using flower::protocol::switchboard::Right;
+using flower::protocol::switchboard::Right_Name;
+using flower::protocol::switchboard::ServerStartRequest;
+using flower::protocol::switchboard::ServerStartResponse;
 using flower::switchboard::Handle;
 using flower::util::CreateSocketpair;
 

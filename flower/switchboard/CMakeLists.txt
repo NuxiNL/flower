@@ -7,10 +7,10 @@ add_executable(
 	flower/switchboard/label_map.cc
 	flower/switchboard/listener.cc
 	flower/switchboard/server_listener.cc
-	flower/proto/egress.ad.h
-	flower/proto/resolver.ad.h
-	flower/proto/server.ad.h
-	flower/proto/switchboard.ad.h
+	flower/protocol/egress.ad.h
+	flower/protocol/resolver.ad.h
+	flower/protocol/server.ad.h
+	flower/protocol/switchboard.ad.h
 )
 
 target_link_libraries(

@@ -1,6 +1,6 @@
 add_executable(
 	flower_ingress_accept
-	flower/proto/switchboard.ad.h
+	flower/protocol/switchboard.ad.h
 	flower/ingress/accept/accept.cc
 )
 

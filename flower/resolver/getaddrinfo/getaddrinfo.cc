@@ -7,18 +7,18 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/resolver.ad.h>
-#include <flower/proto/switchboard.ad.h>
+#include <flower/protocol/resolver.ad.h>
+#include <flower/protocol/switchboard.ad.h>
 #include <flower/util/sockaddr.h>
 
 using namespace flower;
 
 namespace {
-class GetaddrinfoResolver final : public proto::resolver::Resolver::Service {
+class GetaddrinfoResolver final : public protocol::resolver::Resolver::Service {
  public:
   arpc::Status Resolve(arpc::ServerContext* context,
-                       const proto::resolver::ResolveRequest* request,
-                       proto::resolver::ResolveResponse* response) override {
+                       const protocol::resolver::ResolveRequest* request,
+                       protocol::resolver::ResolveResponse* response) override {
     // Extract parameters.
     const auto& in_labels = request->in_labels();
     const char* hostname;
@@ -40,7 +40,7 @@ class GetaddrinfoResolver final : public proto::resolver::Resolver::Service {
 
     // Convert results.
     for (addrinfo* info = result; info != nullptr; info = info->ai_next) {
-      proto::resolver::Target* target = response->add_targets();
+      protocol::resolver::Target* target = response->add_targets();
       util::ConvertSockaddrToLabels(info->ai_addr, info->ai_addrlen, "server",
                                     target->mutable_out_labels());
       target->set_weight(1);
@@ -78,15 +78,15 @@ int main() {
   // TODO(ed): Get file descriptor from somewhere.
   auto switchboard_fd = std::make_shared<arpc::FileDescriptor>(-1);
   auto channel = arpc::CreateChannel(switchboard_fd);
-  auto stub = proto::switchboard::Switchboard::NewStub(channel);
+  auto stub = protocol::switchboard::Switchboard::NewStub(channel);
 
   // Call into the switchboard to register a resolver capable of
   // translating hostname/service labels.
   arpc::ClientContext context;
-  proto::switchboard::ResolverStartRequest request;
+  protocol::switchboard::ResolverStartRequest request;
   request.add_in_labels("server_hostname");
   request.add_in_labels("server_service");
-  proto::switchboard::ResolverStartResponse response;
+  protocol::switchboard::ResolverStartResponse response;
   arpc::Status status = stub->ResolverStart(&context, request, &response);
   if (!status.ok()) {
     // TODO(ed): Log error.

@@ -11,8 +11,8 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/egress.ad.h>
-#include <flower/proto/switchboard.ad.h>
+#include <flower/protocol/egress.ad.h>
+#include <flower/protocol/switchboard.ad.h>
 #include <flower/util/sockaddr.h>
 #include <flower/util/socket.h>
 
@@ -22,13 +22,13 @@ using arpc::ServerBuilder;
 using arpc::ServerContext;
 using arpc::Status;
 using arpc::StatusCode;
-using flower::proto::egress::ConnectRequest;
-using flower::proto::egress::ConnectResponse;
-using flower::proto::egress::Egress::Service;
-using flower::proto::switchboard::EgressStartRequest;
-using flower::proto::switchboard::EgressStartResponse;
-using flower::proto::switchboard::EgressStartResponse;
-using flower::proto::switchboard::Switchboard::NewStub;
+using flower::protocol::egress::ConnectRequest;
+using flower::protocol::egress::ConnectResponse;
+using flower::protocol::egress::Egress::Service;
+using flower::protocol::switchboard::EgressStartRequest;
+using flower::protocol::switchboard::EgressStartResponse;
+using flower::protocol::switchboard::EgressStartResponse;
+using flower::protocol::switchboard::Switchboard::NewStub;
 using flower::util::CreateSocket;
 using flower::util::InitializeSockaddrUn;
 

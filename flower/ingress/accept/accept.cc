@@ -4,7 +4,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/switchboard.ad.h>
+#include <flower/protocol/switchboard.ad.h>
 #include <flower/util/sockaddr.h>
 #include <flower/util/socket.h>
 
@@ -12,12 +12,12 @@ using arpc::Channel;
 using arpc::ClientContext;
 using arpc::FileDescriptor;
 using arpc::Status;
-using flower::proto::switchboard::IngressConnectRequest;
-using flower::proto::switchboard::IngressConnectResponse;
-using flower::proto::switchboard::Switchboard::Stub;
+using flower::protocol::switchboard::IngressConnectRequest;
+using flower::protocol::switchboard::IngressConnectResponse;
+using flower::protocol::switchboard::Switchboard::NewStub;
+using flower::protocol::switchboard::Switchboard::Stub;
 using flower::util::AcceptSocketConnection;
 using flower::util::ConvertSockaddrToLabels;
-using flower::proto::switchboard::Switchboard::NewStub;
 
 int main() {
   // TODO(ed): Get file descriptors from somewhere.

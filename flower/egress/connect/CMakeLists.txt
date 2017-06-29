@@ -1,8 +1,8 @@
 add_executable(
 	flower_egress_connect
 	flower/egress/connect/connect.cc
-	flower/proto/egress.ad.h
-	flower/proto/switchboard.ad.h
+	flower/protocol/egress.ad.h
+	flower/protocol/switchboard.ad.h
 )
 
 target_link_libraries(

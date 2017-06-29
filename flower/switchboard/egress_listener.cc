@@ -3,7 +3,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/egress.ad.h>
+#include <flower/protocol/egress.ad.h>
 #include <flower/switchboard/egress_listener.h>
 #include <flower/switchboard/label_map.h>
 
@@ -11,10 +11,10 @@ using arpc::ClientContext;
 using arpc::FileDescriptor;
 using arpc::Status;
 using arpc::StatusCode;
-using flower::proto::egress::ConnectRequest;
-using flower::proto::egress::ConnectResponse;
-using flower::proto::egress::Egress::NewStub;
-using flower::proto::egress::Egress::Stub;
+using flower::protocol::egress::ConnectRequest;
+using flower::protocol::egress::ConnectResponse;
+using flower::protocol::egress::Egress::NewStub;
+using flower::protocol::egress::Egress::Stub;
 using flower::switchboard::EgressListener;
 
 Status EgressListener::ConnectWithSocket(

@@ -1,6 +1,6 @@
 syntax = 'proto3';
 
-package flower.proto.resolver;
+package flower.protocol.resolver;
 
 message ResolveRequest {
   map<string, string> in_labels = 1;

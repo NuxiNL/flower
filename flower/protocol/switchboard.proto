@@ -1,6 +1,6 @@
 syntax = 'proto3';
 
-package flower.proto.switchboard;
+package flower.protocol.switchboard;
 
 enum Right {
   CLIENT_CONNECT = 0;

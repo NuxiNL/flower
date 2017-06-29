@@ -5,7 +5,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/switchboard.ad.h>
+#include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/label_map.h>
 
 namespace flower {
@@ -14,51 +14,51 @@ namespace switchboard {
 class Directory;
 class Listener;
 
-class Handle final : public proto::switchboard::Switchboard::Service {
+class Handle final : public protocol::switchboard::Switchboard::Service {
  public:
   // Constructs a handle to a switchboard directory that provides access
   // without any restrictions.
   explicit Handle(Directory* directory)
       : directory_(directory),
         rights_({
-            proto::switchboard::Right::CLIENT_CONNECT,
-            proto::switchboard::Right::EGRESS_START,
-            proto::switchboard::Right::INGRESS_CONNECT,
-            proto::switchboard::Right::RESOLVER_START,
-            proto::switchboard::Right::SERVER_START,
+            protocol::switchboard::Right::CLIENT_CONNECT,
+            protocol::switchboard::Right::EGRESS_START,
+            protocol::switchboard::Right::INGRESS_CONNECT,
+            protocol::switchboard::Right::RESOLVER_START,
+            protocol::switchboard::Right::SERVER_START,
         }) {
   }
 
   arpc::Status Constrain(
       arpc::ServerContext* context,
-      const proto::switchboard::ConstrainRequest* request,
-      proto::switchboard::ConstrainResponse* response) override;
+      const protocol::switchboard::ConstrainRequest* request,
+      protocol::switchboard::ConstrainResponse* response) override;
 
   arpc::Status ClientConnect(
       arpc::ServerContext* context,
-      const proto::switchboard::ClientConnectRequest* request,
-      proto::switchboard::ClientConnectResponse* response) override;
+      const protocol::switchboard::ClientConnectRequest* request,
+      protocol::switchboard::ClientConnectResponse* response) override;
   arpc::Status EgressStart(
       arpc::ServerContext* context,
-      const proto::switchboard::EgressStartRequest* request,
-      proto::switchboard::EgressStartResponse* response) override;
+      const protocol::switchboard::EgressStartRequest* request,
+      protocol::switchboard::EgressStartResponse* response) override;
   arpc::Status IngressConnect(
       arpc::ServerContext* context,
-      const proto::switchboard::IngressConnectRequest* request,
-      proto::switchboard::IngressConnectResponse* response) override;
+      const protocol::switchboard::IngressConnectRequest* request,
+      protocol::switchboard::IngressConnectResponse* response) override;
   arpc::Status ResolverStart(
       arpc::ServerContext* context,
-      const proto::switchboard::ResolverStartRequest* request,
-      proto::switchboard::ResolverStartResponse* response) override;
+      const protocol::switchboard::ResolverStartRequest* request,
+      protocol::switchboard::ResolverStartResponse* response) override;
   arpc::Status ServerStart(
       arpc::ServerContext* context,
-      const proto::switchboard::ServerStartRequest* request,
-      proto::switchboard::ServerStartResponse* response) override;
+      const protocol::switchboard::ServerStartRequest* request,
+      protocol::switchboard::ServerStartResponse* response) override;
 
  private:
   // Constructs a handle to a switchboard with limited access.
   Handle(Directory* directory,
-         const std::set<proto::switchboard::Right>& rights,
+         const std::set<protocol::switchboard::Right>& rights,
          const LabelMap& in_labels, const LabelMap& out_labels)
       : directory_(directory),
         rights_(rights),
@@ -67,12 +67,12 @@ class Handle final : public proto::switchboard::Switchboard::Service {
   }
 
   arpc::Status CheckRights_(
-      const std::set<proto::switchboard::Right>& requested_rights);
+      const std::set<protocol::switchboard::Right>& requested_rights);
   arpc::Status ListenerStart_(std::unique_ptr<Listener> listener,
                               std::unique_ptr<arpc::FileDescriptor>* fd);
 
   Directory* const directory_;
-  const std::set<proto::switchboard::Right> rights_;
+  const std::set<protocol::switchboard::Right> rights_;
   const LabelMap in_labels_;
   const LabelMap out_labels_;
 };

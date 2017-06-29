@@ -3,7 +3,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/proto/server.ad.h>
+#include <flower/protocol/server.ad.h>
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/server_listener.h>
 #include <flower/util/socket.h>
@@ -12,10 +12,10 @@ using arpc::ClientContext;
 using arpc::FileDescriptor;
 using arpc::Status;
 using arpc::StatusCode;
-using flower::proto::server::ConnectRequest;
-using flower::proto::server::ConnectResponse;
-using flower::proto::server::Server::NewStub;
-using flower::proto::server::Server::Stub;
+using flower::protocol::server::ConnectRequest;
+using flower::protocol::server::ConnectResponse;
+using flower::protocol::server::Server::NewStub;
+using flower::protocol::server::Server::Stub;
 using flower::switchboard::ServerListener;
 using flower::util::CreateSocketpair;
 

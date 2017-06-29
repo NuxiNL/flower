@@ -1,15 +1,15 @@
 syntax = 'proto3';
 
-package flower.proto.egress;
+package flower.protocol.server;
 
 message ConnectRequest {
-  map<string, string> labels = 1;
+  fd client = 1;
+  map<string, string> labels = 2;
 }
 
 message ConnectResponse {
-  fd server = 1;
 }
 
-service Egress {
+service Server {
   rpc Connect(ConnectRequest) returns (ConnectResponse);
 }
