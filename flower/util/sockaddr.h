@@ -10,6 +10,7 @@
 
 namespace flower {
 namespace util {
+namespace {
 
 template <typename T>
 void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
@@ -39,6 +40,7 @@ void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
   }
 }
 
+}  // namespace
 }  // namespace util
 }  // namespace flower
 

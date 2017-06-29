@@ -5,6 +5,7 @@
 
 namespace flower {
 namespace util {
+namespace {
 
 // Merges two maps together, only retaining duplicate elements in case
 // the values match. Keys of mismatches are stored as well.
@@ -34,6 +35,7 @@ std::pair<OutputItUnion, OutputItDifference> map_union_difference(
                         difference_first);
 }
 
+}  // namespace
 }  // namespace util
 }  // namespace flower
 

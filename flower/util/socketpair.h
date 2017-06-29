@@ -11,6 +11,7 @@
 
 namespace flower {
 namespace util {
+namespace {
 
 arpc::Status CreateSocketpair(std::unique_ptr<arpc::FileDescriptor>* fd1,
                               std::unique_ptr<arpc::FileDescriptor>* fd2) {
@@ -25,6 +26,7 @@ arpc::Status CreateSocketpair(std::unique_ptr<arpc::FileDescriptor>* fd1,
   return arpc::Status::OK;
 }
 
+}  // namespace
 }  // namespace util
 }  // namespace flower
 
