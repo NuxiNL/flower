@@ -3,6 +3,7 @@
 #include <set>
 #include <sstream>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 #include <arpc++/arpc++.h>
@@ -14,8 +15,11 @@
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/listener.h>
 #include <flower/switchboard/server_listener.h>
+#include <flower/util/socket.h>
 
 using arpc::FileDescriptor;
+using arpc::Server;
+using arpc::ServerBuilder;
 using arpc::ServerContext;
 using arpc::Status;
 using arpc::StatusCode;
@@ -34,6 +38,7 @@ using flower::proto::switchboard::Right_Name;
 using flower::proto::switchboard::ServerStartRequest;
 using flower::proto::switchboard::ServerStartResponse;
 using flower::switchboard::Handle;
+using flower::util::CreateSocketpair;
 
 Status Handle::Constrain(ServerContext* context,
                          const ConstrainRequest* request,
@@ -76,8 +81,27 @@ Status Handle::Constrain(ServerContext* context,
     }
   }
 
-  // TODO(ed): Construct new handle!
-  return Status(StatusCode::UNIMPLEMENTED, "TODO(ed): Implement!");
+  // Create a new connection to the switchboard and spawn a worker thread.
+  std::unique_ptr<FileDescriptor> fd1, fd2;
+  if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
+    return status;
+  auto new_handle = std::unique_ptr<Handle>(
+      new Handle(directory_, new_rights, new_in_labels, new_out_labels));
+  // TODO(ed): Deal with thread creation errors!
+  // TODO(ed): Place limits on the number of channels?
+  // TODO(ed): Switch to something event driven?
+  std::thread([
+    connection{std::move(fd1)}, new_handle{std::move(new_handle)}
+  ]() mutable {
+    ServerBuilder builder(std::move(connection));
+    builder.RegisterService(new_handle.get());
+    std::shared_ptr<Server> server = builder.Build();
+    while (server->HandleRequest() == 0) {
+    }
+    // TODO(ed): Log error.
+  }).detach();
+  response->set_switchboard(std::move(fd2));
+  return Status::OK;
 }
 
 Status Handle::ClientConnect(ServerContext* context,

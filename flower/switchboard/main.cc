@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
       // TODO(ed): Report error.
       return 1;
     }
+    // TODO(ed): Deal with thread creation errors!
     std::thread([ connection{std::move(connection)}, &directory ]() mutable {
       ServerBuilder builder(std::move(connection));
       Handle handle(&directory);
