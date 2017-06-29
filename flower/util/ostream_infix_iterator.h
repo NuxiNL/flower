@@ -11,12 +11,11 @@ namespace {
 // Class similar to std::ostream_iterator, except that the delimiter is
 // only printed between elements. Unlike std::ostream_iterator, the
 // final element is not followed by a delimiter.
-template <class CharT = char>
+template <class CharT = char, class Traits = std::char_traits<CharT>>
 class ostream_infix_iterator {
  public:
-  typedef std::basic_ostream<CharT, std::char_traits<CharT>> ostream_type;
-  typedef std::basic_string_view<CharT, std::char_traits<CharT>>
-      string_view_type;
+  typedef std::basic_ostream<CharT, Traits> ostream_type;
+  typedef std::basic_string_view<CharT, Traits> string_view_type;
 
   ostream_infix_iterator(ostream_type& stream, string_view_type delim)
       : stream_(&stream), delim_(delim), first_(true) {
