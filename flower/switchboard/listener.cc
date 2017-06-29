@@ -5,7 +5,7 @@
 
 #include <flower/switchboard/egress_listener.h>
 #include <flower/switchboard/label_map.h>
-#include <flower/util/socketpair.h>
+#include <flower/util/socket.h>
 
 using arpc::CreateChannel;
 using arpc::FileDescriptor;

@@ -6,7 +6,7 @@
 #include <flower/proto/server.h>
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/server_listener.h>
-#include <flower/util/socketpair.h>
+#include <flower/util/socket.h>
 
 using arpc::ClientContext;
 using arpc::FileDescriptor;
