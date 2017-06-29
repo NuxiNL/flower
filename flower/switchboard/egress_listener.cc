@@ -35,6 +35,9 @@ Status EgressListener::ConnectWithoutSocket(
   ConnectResponse response;
   if (Status status = stub->Connect(&context, request, &response); !status.ok())
     return status;
+  if (!response.server())
+    return Status(StatusCode::INTERNAL,
+                  "Egress did not return a file descriptor");
   *fd = response.server();
   return Status::OK;
 }
