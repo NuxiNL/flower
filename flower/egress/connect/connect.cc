@@ -21,9 +21,9 @@ class ConnectEgress final : public proto::egress::Egress::Service {
                        const proto::egress::ConnectRequest* request,
                        proto::egress::ConnectResponse* response) override {
     // Convert the provided labels to a socket address.
-    const auto& out_labels = request->out_labels();
-    auto address_family = out_labels.find("address_family");
-    if (address_family == out_labels.end()) {
+    const auto& labels = request->labels();
+    auto address_family = labels.find("address_family");
+    if (address_family == labels.end()) {
       return arpc::Status(arpc::StatusCode::INVALID_ARGUMENT,
                           "Label address_family is absent");
     } else if (address_family->second == "inet" ||
@@ -33,11 +33,11 @@ class ConnectEgress final : public proto::egress::Egress::Service {
       // process must be used for that.
       const char* address;
       if (arpc::Status status =
-              ExtractLabel(out_labels, "server_address", &address);
+              ExtractLabel(labels, "server_address", &address);
           !status.ok())
         return status;
       const char* port;
-      if (arpc::Status status = ExtractLabel(out_labels, "server_port", &port);
+      if (arpc::Status status = ExtractLabel(labels, "server_port", &port);
           !status.ok())
         return status;
 
@@ -57,7 +57,7 @@ class ConnectEgress final : public proto::egress::Egress::Service {
     } else if (address_family->second == "unix") {
       // UNIX sockets: copy the path label into a sockaddr_un structure.
       const char* path;
-      if (arpc::Status status = ExtractLabel(out_labels, "server_path", &path);
+      if (arpc::Status status = ExtractLabel(labels, "server_path", &path);
           !status.ok())
         return status;
 
