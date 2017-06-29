@@ -2,13 +2,15 @@ cmake_minimum_required(VERSION 3.8.0)
 
 project(flower)
 
+include(CheckPrototypeDefinition)
+include(GNUInstallDirs)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Threads REQUIRED)
 
-include (CheckPrototypeDefinition)
 check_prototype_definition(program_main
 	"void program_main(const argdata_t *ad)"
 	""
