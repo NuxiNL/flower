@@ -45,7 +45,6 @@ Status Directory::LookupListener(const LabelMap& out_labels,
   std::shared_lock<std::shared_mutex> lock(lock_);
   const std::pair<LabelMap, std::shared_ptr<Listener>>* match = nullptr;
   for (const auto& listener : listeners_) {
-    connection_labels->clear();
     LabelVector conflicts;
     MergeLabelMaps(out_labels, listener.first, connection_labels, &conflicts);
     if (conflicts.empty()) {
