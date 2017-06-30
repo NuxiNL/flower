@@ -123,7 +123,7 @@ Status Handle::EgressStart(ServerContext* context,
   std::unique_ptr<FileDescriptor> fd1, fd2;
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
-  if (Status status = directory_->RegisterListener(
+  if (Status status = directory_->RegisterTarget(
           in_labels, std::make_unique<EgressListener>(std::move(fd1)));
       !status.ok())
     return status;
@@ -187,7 +187,7 @@ Status Handle::ServerStart(ServerContext* context,
   std::unique_ptr<FileDescriptor> fd1, fd2;
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
-  if (Status status = directory_->RegisterListener(
+  if (Status status = directory_->RegisterTarget(
           in_labels, std::make_unique<ServerListener>(std::move(fd1)));
       !status.ok())
     return status;

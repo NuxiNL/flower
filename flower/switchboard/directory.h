@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <shared_mutex>
+#include <variant>
 
 #include <arpc++/arpc++.h>
 
@@ -19,15 +20,20 @@ namespace switchboard {
 
 class Directory {
  public:
-  arpc::Status RegisterListener(const LabelMap& in_labels,
-                                std::unique_ptr<Listener> listener);
+  // TODO(ed): Let this be a variant between listeners and resolvers.
+  typedef std::variant<std::shared_ptr<Listener>> Target;
+
+  arpc::Status RegisterTarget(const LabelMap& in_labels, const Target& target);
   arpc::Status LookupListener(const LabelMap& out_labels,
                               LabelMap* connection_labels,
                               std::shared_ptr<Listener>* listener);
 
  private:
+  arpc::Status LookupTarget(const LabelMap& out_labels,
+                            LabelMap* connection_labels, Target* target);
+
   std::shared_mutex lock_;
-  std::vector<std::pair<LabelMap, std::shared_ptr<Listener>>> listeners_;
+  std::vector<std::pair<LabelMap, Target>> targets_;
 };
 
 }  // namespace switchboard
