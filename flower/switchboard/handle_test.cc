@@ -248,6 +248,34 @@ TEST(Handle, ClientServer) {
         buf);
   }
 
+  // Start a second server that listens on {host="pear.apple.com"}.
+  {
+    ServerStartRequest request;
+    auto in_labels = request.mutable_in_labels();
+    (*in_labels)["host"] = "pear.apple.com";
+
+    ServerContext context;
+    ServerStartResponse response;
+    EXPECT_TRUE(handle.ServerStart(&context, &request, &response).ok());
+  }
+
+  // Connecting to {datacenter="frankfurt"} should now fail, as it
+  // becomes ambiguous which server to pick.
+  {
+    ClientConnectRequest request;
+    auto out_labels = request.mutable_out_labels();
+    (*out_labels)["datacenter"] = "frankfurt";
+
+    ServerContext context;
+    ClientConnectResponse response;
+    Status status = handle.ClientConnect(&context, &request, &response);
+    EXPECT_EQ(StatusCode::FAILED_PRECONDITION, status.error_code());
+    EXPECT_EQ(
+        "Labels match multiple targets, "
+        "which can be resolved by adding one of the labels { host }",
+        status.error_message());
+  }
+
   server_thread.join();
 }
 
