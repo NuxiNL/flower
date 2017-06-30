@@ -7,6 +7,7 @@
 #define FLOWER_SWITCHBOARD_SERVER_LISTENER_H
 
 #include <memory>
+#include <mutex>
 
 #include <arpc++/arpc++.h>
 
@@ -18,12 +19,20 @@ namespace switchboard {
 
 class ServerListener final : public Listener {
  public:
+  explicit ServerListener(std::unique_ptr<arpc::FileDescriptor> fd)
+      : channel_(arpc::CreateChannel(std::move(fd))) {
+  }
+
   arpc::Status ConnectWithSocket(
       const LabelMap& connection_labels,
       const std::shared_ptr<arpc::FileDescriptor>& fd) override;
   arpc::Status ConnectWithoutSocket(
       const LabelMap& connection_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) override;
+
+ protected:
+  std::shared_ptr<arpc::Channel> channel_;
+  std::mutex channel_lock_;
 };
 
 }  // namespace switchboard

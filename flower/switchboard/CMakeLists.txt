@@ -4,7 +4,6 @@ add_library(
 	flower/switchboard/egress_listener.cc
 	flower/switchboard/handle.cc
 	flower/switchboard/label_map.cc
-	flower/switchboard/listener.cc
 	flower/switchboard/server_listener.cc
 	flower/protocol/egress.ad.h
 	flower/protocol/resolver.ad.h

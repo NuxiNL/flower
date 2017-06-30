@@ -120,12 +120,14 @@ Status Handle::EgressStart(ServerContext* context,
       !status.ok())
     return status;
 
-  std::unique_ptr<FileDescriptor> fd;
-  if (Status status =
-          ListenerStart_(in_labels, std::make_unique<EgressListener>(), &fd);
+  std::unique_ptr<FileDescriptor> fd1, fd2;
+  if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
+    return status;
+  if (Status status = directory_->RegisterListener(
+          in_labels, std::make_unique<EgressListener>(std::move(fd1)));
       !status.ok())
     return status;
-  response->set_egress(std::move(fd));
+  response->set_egress(std::move(fd2));
   return Status::OK;
 }
 
@@ -182,12 +184,14 @@ Status Handle::ServerStart(ServerContext* context,
       !status.ok())
     return status;
 
-  std::unique_ptr<FileDescriptor> fd;
-  if (Status status =
-          ListenerStart_(in_labels, std::make_unique<ServerListener>(), &fd);
+  std::unique_ptr<FileDescriptor> fd1, fd2;
+  if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
+    return status;
+  if (Status status = directory_->RegisterListener(
+          in_labels, std::make_unique<ServerListener>(std::move(fd1)));
       !status.ok())
     return status;
-  response->set_server(std::move(fd));
+  response->set_server(std::move(fd2));
   return Status::OK;
 }
 
@@ -234,17 +238,5 @@ Status Handle::GetOutLabels_(const LabelMap& additional_labels,
     ss << " } are already defined with different values";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
-  return Status::OK;
-}
-
-Status Handle::ListenerStart_(const LabelMap& in_labels,
-                              std::unique_ptr<Listener> listener,
-                              std::unique_ptr<FileDescriptor>* fd) const {
-  if (Status status = listener->Start(fd); !status.ok())
-    return status;
-  if (Status status =
-          directory_->RegisterListener(in_labels, std::move(listener));
-      !status.ok())
-    return status;
   return Status::OK;
 }
