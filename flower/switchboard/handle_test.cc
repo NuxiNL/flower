@@ -15,6 +15,7 @@
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
 #include <flower/switchboard/handle.h>
+#include <flower/switchboard/label_map.h>
 
 using arpc::ClientContext;
 using arpc::CreateChannel;
@@ -36,6 +37,7 @@ using flower::protocol::switchboard::ServerStartResponse;
 using flower::protocol::switchboard::Switchboard;
 using flower::switchboard::Directory;
 using flower::switchboard::Handle;
+using flower::switchboard::LabelMap;
 
 TEST(Handle, Constrain) {
   // A handle starts out without any constraints configured. Create a
@@ -72,9 +74,10 @@ TEST(Handle, Constrain) {
     ConstrainResponse response;
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
-    EXPECT_EQ("Rights { EGRESS_START, INGRESS_CONNECT } "
-              "are not present on this handle",
-              status.error_message());
+    EXPECT_EQ(
+        "Rights { EGRESS_START, INGRESS_CONNECT } "
+        "are not present on this handle",
+        status.error_message());
   }
 
   // Input labels cannot be overwritten with different values.
@@ -91,9 +94,10 @@ TEST(Handle, Constrain) {
     ConstrainResponse response;
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
-    EXPECT_EQ("In-labels { toast } "
-              "are already defined with different values",
-              status.error_message());
+    EXPECT_EQ(
+        "In-labels { toast } "
+        "are already defined with different values",
+        status.error_message());
   }
 
   // Output labels cannot be overwritten with different values.
@@ -109,9 +113,10 @@ TEST(Handle, Constrain) {
     ConstrainResponse response;
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
-    EXPECT_EQ("Out-labels { dog, sheep } "
-              "are already defined with different values",
-              status.error_message());
+    EXPECT_EQ(
+        "Out-labels { dog, sheep } "
+        "are already defined with different values",
+        status.error_message());
   }
 
   // Sticking to the rules allows us to constrain.
@@ -138,15 +143,15 @@ TEST(Handle, Constrain) {
 // and writing back a textual response of all of the data it received in
 // the request.
 class LabelEchoingServer final : public Server::Service {
-public:
-  Status Connect(ServerContext *context, const ConnectRequest *request,
-                 ConnectResponse *response) override {
+ public:
+  Status Connect(ServerContext* context, const ConnectRequest* request,
+                 ConnectResponse* response) override {
     std::thread([
       fd{request->client()}, labels{request->connection_labels()}
     ]() {
       std::ostringstream ss;
       ss << "Got incoming connection with labels:" << std::endl;
-      for (const auto &label : labels)
+      for (const auto& label : labels)
         ss << label.first << " " << label.second << std::endl;
       std::string str = ss.str();
       EXPECT_EQ(str.size(), write(fd->get(), str.data(), str.size()));
@@ -193,6 +198,7 @@ TEST(Handle, ClientServer) {
     builder.RegisterService(&label_echoing_server);
     auto server = builder.Build();
     EXPECT_EQ(0, server->HandleRequest());
+    EXPECT_EQ(0, server->HandleRequest());
   });
 
   // Make a connection to {host="banana.apple.com",datacenter="frankfurt"}.
@@ -211,11 +217,38 @@ TEST(Handle, ClientServer) {
     char buf[81] = {};
     EXPECT_EQ(sizeof(buf) - 1,
               read(response.server()->get(), buf, sizeof(buf)));
-    ASSERT_STREQ("Got incoming connection with labels:\n"
-                 "datacenter frankfurt\n"
-                 "host banana.apple.com\n",
-                 buf);
+    ASSERT_STREQ(
+        "Got incoming connection with labels:\n"
+        "datacenter frankfurt\n"
+        "host banana.apple.com\n",
+        buf);
+  }
+
+  // Just connecting to {datacenter="frankfurt"} should be sufficient,
+  // as none of the labels contradict with {host="banana.apple.com"}.
+  {
+    ClientConnectRequest request;
+    auto out_labels = request.mutable_out_labels();
+    (*out_labels)["datacenter"] = "frankfurt";
+
+    ServerContext context;
+    ClientConnectResponse response;
+    EXPECT_TRUE(handle.ClientConnect(&context, &request, &response).ok());
+    EXPECT_EQ(
+        (LabelMap{{"datacenter", "frankfurt"}, {"host", "banana.apple.com"}}),
+        response.connection_labels());
+
+    char buf[81] = {};
+    EXPECT_EQ(sizeof(buf) - 1,
+              read(response.server()->get(), buf, sizeof(buf)));
+    ASSERT_STREQ(
+        "Got incoming connection with labels:\n"
+        "datacenter frankfurt\n"
+        "host banana.apple.com\n",
+        buf);
   }
 
   server_thread.join();
 }
+
+// TODO(ed): Add more tests!
