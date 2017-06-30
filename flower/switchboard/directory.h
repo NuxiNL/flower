@@ -7,15 +7,15 @@
 #define FLOWER_SWITCHBOARD_DIRECTORY_H
 
 #include <memory>
+#include <shared_mutex>
 
 #include <arpc++/arpc++.h>
 
 #include <flower/switchboard/label_map.h>
+#include <flower/switchboard/listener.h>
 
 namespace flower {
 namespace switchboard {
-
-class Listener;
 
 class Directory {
  public:
@@ -24,6 +24,10 @@ class Directory {
   arpc::Status LookupListener(const LabelMap& out_labels,
                               LabelMap* connection_labels,
                               std::shared_ptr<Listener>* listener);
+
+ private:
+  std::shared_mutex lock_;
+  std::vector<std::pair<LabelMap, std::shared_ptr<Listener>>> listeners_;
 };
 
 }  // namespace switchboard
