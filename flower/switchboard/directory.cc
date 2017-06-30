@@ -19,8 +19,21 @@ using flower::util::ostream_infix_iterator;
 
 Status Directory::RegisterListener(const LabelMap& in_labels,
                                    std::unique_ptr<Listener> listener) {
-  // TODO(ed): Reject duplicate registration, overlapping labels, etc.
+  // Scan through all the targets, ensuring that we don't introduce new
+  // targets that make lookups ambiguous (e.g., identical, subsets or
+  // supersets of each other).
+  // TODO(ed): Prune dead targets.
+  // TODO(ed): Could the error message include more details without
+  // leaking private information?
   std::unique_lock<std::shared_mutex> lock(lock_);
+  for (const auto& listener : listeners_) {
+    LabelMap unused;
+    LabelVector conflicts;
+    MergeLabelMaps(in_labels, listener.first, &unused, &conflicts);
+    if (conflicts.empty())
+      return Status(StatusCode::FAILED_PRECONDITION,
+                    "Another destination with no conflicting labels exists");
+  }
   listeners_.emplace_back(in_labels, std::move(listener));
   return Status::OK;
 }
