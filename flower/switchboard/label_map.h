@@ -14,6 +14,9 @@
 namespace flower {
 namespace switchboard {
 
+// TODO(ed): Would it make sense not to use maps, but vectors of sorted
+// pairs internally? We never perform lookups, but only apply scanning
+// operations (e.g., merging) on them.
 typedef std::map<std::string, std::string, std::less<>> LabelMap;
 typedef std::vector<std::string> LabelVector;
 
