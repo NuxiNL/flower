@@ -3,11 +3,15 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
+#include <unistd.h>
+
 #include <memory>
+#include <thread>
 
 #include <arpc++/arpc++.h>
 #include <gtest/gtest.h>
 
+#include <flower/protocol/server.ad.h>
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
 #include <flower/switchboard/handle.h>
@@ -15,14 +19,22 @@
 using arpc::ClientContext;
 using arpc::CreateChannel;
 using arpc::FileDescriptor;
+using arpc::ServerBuilder;
 using arpc::ServerContext;
 using arpc::Status;
 using arpc::StatusCode;
+using flower::protocol::server::ConnectRequest;
+using flower::protocol::server::ConnectResponse;
+using flower::protocol::server::Server;
+using flower::protocol::switchboard::ClientConnectRequest;
+using flower::protocol::switchboard::ClientConnectResponse;
 using flower::protocol::switchboard::ConstrainRequest;
 using flower::protocol::switchboard::ConstrainResponse;
 using flower::protocol::switchboard::Right;
-using flower::protocol::switchboard::Switchboard::NewStub;
-using flower::protocol::switchboard::Switchboard::Stub;
+using flower::protocol::switchboard::ServerStartRequest;
+using flower::protocol::switchboard::ServerStartResponse;
+using flower::protocol::switchboard::Switchboard;
+using flower::switchboard::Directory;
 using flower::switchboard::Handle;
 
 TEST(Handle, Constrain) {
@@ -55,15 +67,14 @@ TEST(Handle, Constrain) {
     request.add_rights(Right::SERVER_START);
 
     auto channel = CreateChannel(connection);
-    std::unique_ptr<Stub> stub = NewStub(channel);
+    std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
     ClientContext context;
     ConstrainResponse response;
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
-    EXPECT_EQ(
-        "Rights { EGRESS_START, INGRESS_CONNECT } "
-        "are not present on this handle",
-        status.error_message());
+    EXPECT_EQ("Rights { EGRESS_START, INGRESS_CONNECT } "
+              "are not present on this handle",
+              status.error_message());
   }
 
   // Input labels cannot be overwritten with different values.
@@ -75,15 +86,14 @@ TEST(Handle, Constrain) {
     (*in_labels)["direction"] = "left";
 
     auto channel = CreateChannel(connection);
-    std::unique_ptr<Stub> stub = NewStub(channel);
+    std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
     ClientContext context;
     ConstrainResponse response;
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
-    EXPECT_EQ(
-        "In-labels { toast } "
-        "are already defined with different values",
-        status.error_message());
+    EXPECT_EQ("In-labels { toast } "
+              "are already defined with different values",
+              status.error_message());
   }
 
   // Output labels cannot be overwritten with different values.
@@ -94,15 +104,14 @@ TEST(Handle, Constrain) {
     (*out_labels)["sheep"] = "black";
 
     auto channel = CreateChannel(connection);
-    std::unique_ptr<Stub> stub = NewStub(channel);
+    std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
     ClientContext context;
     ConstrainResponse response;
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
-    EXPECT_EQ(
-        "Out-labels { dog, sheep } "
-        "are already defined with different values",
-        status.error_message());
+    EXPECT_EQ("Out-labels { dog, sheep } "
+              "are already defined with different values",
+              status.error_message());
   }
 
   // Sticking to the rules allows us to constrain.
@@ -117,7 +126,7 @@ TEST(Handle, Constrain) {
     (*out_labels)["fish"] = "orange";
 
     auto channel = CreateChannel(connection);
-    std::unique_ptr<Stub> stub = NewStub(channel);
+    std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
     ClientContext context;
     ConstrainResponse response;
     EXPECT_TRUE(stub->Constrain(&context, request, &response).ok());
@@ -125,4 +134,88 @@ TEST(Handle, Constrain) {
   }
 }
 
-// TODO(ed): Add tests for other operations.
+// A server process that does nothing more than accepting connections
+// and writing back a textual response of all of the data it received in
+// the request.
+class LabelEchoingServer final : public Server::Service {
+public:
+  Status Connect(ServerContext *context, const ConnectRequest *request,
+                 ConnectResponse *response) override {
+    std::thread([
+      fd{request->client()}, labels{request->connection_labels()}
+    ]() {
+      std::ostringstream ss;
+      ss << "Got incoming connection with labels:" << std::endl;
+      for (const auto &label : labels)
+        ss << label.first << " " << label.second << std::endl;
+      std::string str = ss.str();
+      EXPECT_EQ(str.size(), write(fd->get(), str.data(), str.size()));
+    }).detach();
+    return Status::OK;
+  }
+};
+
+TEST(Handle, ClientServer) {
+  Directory directory;
+  Handle handle(&directory);
+
+  // Start a server that listens on {host="banana.apple.com"}.
+  std::shared_ptr<FileDescriptor> server_fd;
+  {
+    ServerStartRequest request;
+    auto in_labels = request.mutable_in_labels();
+    (*in_labels)["host"] = "banana.apple.com";
+
+    ServerContext context;
+    ServerStartResponse response;
+    EXPECT_TRUE(handle.ServerStart(&context, &request, &response).ok());
+    server_fd = response.server();
+  }
+
+  // Connecting to {host="pear.apple.com"} should fail.
+  {
+    ClientConnectRequest request;
+    auto out_labels = request.mutable_out_labels();
+    (*out_labels)["host"] = "pear.apple.com";
+
+    ServerContext context;
+    ClientConnectResponse response;
+    Status status = handle.ClientConnect(&context, &request, &response);
+    EXPECT_EQ(StatusCode::NOT_FOUND, status.error_code());
+    EXPECT_EQ("No matching destination found", status.error_message());
+  }
+
+  // Spawn a thread to start processing connections going to
+  // {host="banana.apple.com"}.
+  std::thread server_thread([server_fd]() {
+    ServerBuilder builder(server_fd);
+    LabelEchoingServer label_echoing_server;
+    builder.RegisterService(&label_echoing_server);
+    auto server = builder.Build();
+    EXPECT_EQ(0, server->HandleRequest());
+  });
+
+  // Make a connection to {host="banana.apple.com",datacenter="frankfurt"}.
+  // This connection should end up on the server created above.
+  {
+    ClientConnectRequest request;
+    auto out_labels = request.mutable_out_labels();
+    (*out_labels)["host"] = "banana.apple.com";
+    (*out_labels)["datacenter"] = "frankfurt";
+
+    ServerContext context;
+    ClientConnectResponse response;
+    EXPECT_TRUE(handle.ClientConnect(&context, &request, &response).ok());
+    EXPECT_EQ(*out_labels, response.connection_labels());
+
+    char buf[81] = {};
+    EXPECT_EQ(sizeof(buf) - 1,
+              read(response.server()->get(), buf, sizeof(buf)));
+    ASSERT_STREQ("Got incoming connection with labels:\n"
+                 "datacenter frankfurt\n"
+                 "host banana.apple.com\n",
+                 buf);
+  }
+
+  server_thread.join();
+}
