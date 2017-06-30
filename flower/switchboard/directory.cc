@@ -44,7 +44,7 @@ Status Directory::LookupListener(const LabelMap& out_labels,
         LabelVector disambiguation;
         MergeLabelMaps(match->first, listener.first, &unused, &disambiguation);
         std::ostringstream ss;
-        ss << "Constraints match multiple targets, "
+        ss << "Labels match multiple targets, "
               "which can be resolved by adding one of the labels { ";
         std::copy(disambiguation.begin(), disambiguation.end(),
                   ostream_infix_iterator<>(ss, ", "));
