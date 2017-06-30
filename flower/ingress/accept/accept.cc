@@ -19,8 +19,7 @@ using arpc::FileDescriptor;
 using arpc::Status;
 using flower::protocol::switchboard::IngressConnectRequest;
 using flower::protocol::switchboard::IngressConnectResponse;
-using flower::protocol::switchboard::Switchboard::NewStub;
-using flower::protocol::switchboard::Switchboard::Stub;
+using flower::protocol::switchboard::Switchboard;
 using flower::util::AcceptSocketConnection;
 using flower::util::ConvertSockaddrToLabels;
 
@@ -30,7 +29,7 @@ int main() {
   auto accept_fd = std::make_shared<FileDescriptor>(-1);
 
   std::shared_ptr<Channel> channel = CreateChannel(switchboard_fd);
-  std::unique_ptr<Stub> stub = NewStub(channel);
+  std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
   for (;;) {
     // Accept an incoming connection.
     union {

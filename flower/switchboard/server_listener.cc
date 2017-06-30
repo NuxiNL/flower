@@ -19,8 +19,7 @@ using arpc::Status;
 using arpc::StatusCode;
 using flower::protocol::server::ConnectRequest;
 using flower::protocol::server::ConnectResponse;
-using flower::protocol::server::Server::NewStub;
-using flower::protocol::server::Server::Stub;
+using flower::protocol::server::Server;
 using flower::switchboard::ServerListener;
 using flower::util::CreateSocketpair;
 
@@ -28,7 +27,7 @@ Status ServerListener::ConnectWithSocket(
     const LabelMap& connection_labels,
     const std::shared_ptr<FileDescriptor>& fd) {
   std::lock_guard<std::mutex> lock_(channel_lock_);
-  std::unique_ptr<Stub> stub = NewStub(channel_);
+  std::unique_ptr<Server::Stub> stub = Server::NewStub(channel_);
 
   // Forward incoming connection to the server process.
   ClientContext context;

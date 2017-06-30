@@ -18,8 +18,7 @@ using arpc::Status;
 using arpc::StatusCode;
 using flower::protocol::egress::ConnectRequest;
 using flower::protocol::egress::ConnectResponse;
-using flower::protocol::egress::Egress::NewStub;
-using flower::protocol::egress::Egress::Stub;
+using flower::protocol::egress::Egress;
 using flower::switchboard::EgressListener;
 
 Status EgressListener::ConnectWithSocket(
@@ -32,7 +31,7 @@ Status EgressListener::ConnectWithSocket(
 Status EgressListener::ConnectWithoutSocket(
     const LabelMap& connection_labels, std::shared_ptr<FileDescriptor>* fd) {
   std::lock_guard<std::mutex> lock_(channel_lock_);
-  std::unique_ptr<Stub> stub = NewStub(channel_);
+  std::unique_ptr<Egress::Stub> stub = Egress::NewStub(channel_);
 
   // Forward incoming connection to the egress process.
   ClientContext context;

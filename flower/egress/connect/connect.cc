@@ -29,16 +29,16 @@ using arpc::Status;
 using arpc::StatusCode;
 using flower::protocol::egress::ConnectRequest;
 using flower::protocol::egress::ConnectResponse;
-using flower::protocol::egress::Egress::Service;
+using flower::protocol::egress::Egress;
 using flower::protocol::switchboard::EgressStartRequest;
 using flower::protocol::switchboard::EgressStartResponse;
 using flower::protocol::switchboard::EgressStartResponse;
-using flower::protocol::switchboard::Switchboard::NewStub;
+using flower::protocol::switchboard::Switchboard;
 using flower::util::CreateSocket;
 using flower::util::InitializeSockaddrUn;
 
 namespace {
-class ConnectEgress final : public Service {
+class ConnectEgress final : public Egress::Service {
  public:
   Status Connect(ServerContext* context, const ConnectRequest* request,
                  ConnectResponse* response) override {
@@ -136,7 +136,7 @@ int main() {
   // TODO(ed): Get file descriptor from somewhere.
   auto switchboard_fd = std::make_shared<FileDescriptor>(-1);
   auto channel = CreateChannel(switchboard_fd);
-  auto stub = NewStub(channel);
+  auto stub = Switchboard::NewStub(channel);
 
   // Call into the switchboard to register a egress capable of
   // translating hostname/service labels.
