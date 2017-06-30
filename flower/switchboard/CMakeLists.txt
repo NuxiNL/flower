@@ -1,14 +1,15 @@
 add_library(
 	flower_switchboard_lib
+	flower/protocol/egress.ad.h
+	flower/protocol/resolver.ad.h
+	flower/protocol/server.ad.h
+	flower/protocol/switchboard.ad.h
 	flower/switchboard/directory.cc
 	flower/switchboard/egress_listener.cc
 	flower/switchboard/handle.cc
 	flower/switchboard/label_map.cc
 	flower/switchboard/server_listener.cc
-	flower/protocol/egress.ad.h
-	flower/protocol/resolver.ad.h
-	flower/protocol/server.ad.h
-	flower/protocol/switchboard.ad.h
+	flower/switchboard/target_picker.cc
 )
 
 add_executable(

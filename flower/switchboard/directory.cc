@@ -3,9 +3,11 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
+#include <memory>
 #include <shared_mutex>
 #include <sstream>
 #include <thread>
+#include <utility>
 
 #include <flower/switchboard/directory.h>
 #include <flower/util/ostream_infix_iterator.h>
@@ -17,8 +19,7 @@ using flower::switchboard::Directory;
 using flower::switchboard::LabelMap;
 using flower::util::ostream_infix_iterator;
 
-Status Directory::RegisterTarget(const LabelMap& in_labels,
-                                 const Target& target) {
+Status Directory::Register(const LabelMap& in_labels, const Target& target) {
   // Scan through all the targets, ensuring that we don't introduce new
   // targets that make lookups ambiguous (e.g., identical, subsets or
   // supersets of each other).
@@ -38,20 +39,8 @@ Status Directory::RegisterTarget(const LabelMap& in_labels,
   return Status::OK;
 }
 
-Status Directory::LookupListener(const LabelMap& out_labels,
-                                 LabelMap* connection_labels,
-                                 std::shared_ptr<Listener>* result) {
-  // TODO(ed): Add support for resolvers.
-  Target target;
-  if (Status status = LookupTarget(out_labels, connection_labels, &target);
-      !status.ok())
-    return status;
-  *result = std::get<std::shared_ptr<Listener>>(target);
-  return Status::OK;
-}
-
-Status Directory::LookupTarget(const LabelMap& out_labels,
-                               LabelMap* connection_labels, Target* result) {
+Status Directory::Lookup(const LabelMap& out_labels,
+                         LabelMap* connection_labels, Target* result) {
   std::shared_lock<std::shared_mutex> lock(lock_);
   const std::pair<LabelMap, Target>* match = nullptr;
   for (const auto& target : targets_) {

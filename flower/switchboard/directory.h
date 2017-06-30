@@ -8,7 +8,9 @@
 
 #include <memory>
 #include <shared_mutex>
+#include <utility>
 #include <variant>
+#include <vector>
 
 #include <arpc++/arpc++.h>
 
@@ -23,15 +25,11 @@ class Directory {
   // TODO(ed): Let this be a variant between listeners and resolvers.
   typedef std::variant<std::shared_ptr<Listener>> Target;
 
-  arpc::Status RegisterTarget(const LabelMap& in_labels, const Target& target);
-  arpc::Status LookupListener(const LabelMap& out_labels,
-                              LabelMap* connection_labels,
-                              std::shared_ptr<Listener>* listener);
+  arpc::Status Register(const LabelMap& in_labels, const Target& target);
+  arpc::Status Lookup(const LabelMap& out_labels, LabelMap* connection_labels,
+                      Target* target);
 
  private:
-  arpc::Status LookupTarget(const LabelMap& out_labels,
-                            LabelMap* connection_labels, Target* target);
-
   std::shared_mutex lock_;
   std::vector<std::pair<LabelMap, Target>> targets_;
 };

@@ -18,13 +18,15 @@ namespace switchboard {
 
 class Directory;
 class Listener;
+class TargetPicker;
 
 class Handle final : public protocol::switchboard::Switchboard::Service {
  public:
   // Constructs a handle to a switchboard directory that provides access
   // without any restrictions.
-  explicit Handle(Directory* directory)
+  explicit Handle(Directory* directory, TargetPicker* target_picker)
       : directory_(directory),
+        target_picker_(target_picker),
         rights_({
             protocol::switchboard::Right::CLIENT_CONNECT,
             protocol::switchboard::Right::EGRESS_START,
@@ -62,10 +64,11 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
 
  private:
   // Constructs a handle to a switchboard with limited access.
-  Handle(Directory* directory,
+  Handle(Directory* directory, TargetPicker* target_picker,
          const std::set<protocol::switchboard::Right>& rights,
          const LabelMap& in_labels, const LabelMap& out_labels)
       : directory_(directory),
+        target_picker_(target_picker),
         rights_(rights),
         in_labels_(in_labels),
         out_labels_(out_labels) {
@@ -79,6 +82,7 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
                              LabelMap* merged_labels) const;
 
   Directory* const directory_;
+  TargetPicker* const target_picker_;
   const std::set<protocol::switchboard::Right> rights_;
   const LabelMap in_labels_;
   const LabelMap out_labels_;

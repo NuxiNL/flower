@@ -20,6 +20,7 @@
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/listener.h>
 #include <flower/switchboard/server_listener.h>
+#include <flower/switchboard/target_picker.h>
 #include <flower/util/ostream_infix_iterator.h>
 #include <flower/util/socket.h>
 
@@ -68,7 +69,7 @@ Status Handle::Constrain(ServerContext* context,
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
   auto handle = std::unique_ptr<Handle>(
-      new Handle(directory_, rights, in_labels, out_labels));
+      new Handle(directory_, target_picker_, rights, in_labels, out_labels));
   // TODO(ed): Deal with thread creation errors!
   // TODO(ed): Place limits on the number of channels?
   // TODO(ed): Switch to something event driven?
@@ -96,18 +97,19 @@ Status Handle::ClientConnect(ServerContext* context,
       !status.ok())
     return status;
 
-  auto connection_labels = response->mutable_connection_labels();
-  std::shared_ptr<Listener> listener;
-  if (Status status =
-          directory_->LookupListener(out_labels, connection_labels, &listener);
-      !status.ok())
-    return status;
-  std::shared_ptr<FileDescriptor> fd;
-  if (Status status = listener->ConnectWithoutSocket(*connection_labels, &fd);
-      !status.ok())
-    return status;
-  response->set_server(std::move(fd));
-  return Status::OK;
+  return target_picker_->Pick(
+      directory_, out_labels,
+      [response](const LabelMap& connection_labels,
+                 const std::shared_ptr<Listener>& listener) {
+        std::shared_ptr<FileDescriptor> server;
+        if (Status status =
+                listener->ConnectWithoutSocket(connection_labels, &server);
+            !status.ok())
+          return status;
+        response->set_server(std::move(server));
+        *response->mutable_connection_labels() = connection_labels;
+        return Status::OK;
+      });
 }
 
 Status Handle::EgressStart(ServerContext* context,
@@ -123,7 +125,7 @@ Status Handle::EgressStart(ServerContext* context,
   std::unique_ptr<FileDescriptor> fd1, fd2;
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
-  if (Status status = directory_->RegisterTarget(
+  if (Status status = directory_->Register(
           in_labels, std::make_unique<EgressListener>(std::move(fd1)));
       !status.ok())
     return status;
@@ -134,9 +136,6 @@ Status Handle::EgressStart(ServerContext* context,
 Status Handle::IngressConnect(ServerContext* context,
                               const IngressConnectRequest* request,
                               IngressConnectResponse* response) {
-  if (!request->client())
-    return Status(StatusCode::INVALID_ARGUMENT,
-                  "Ingress must provide a file descriptor");
   if (Status status = CheckRights_({Right::INGRESS_CONNECT}); !status.ok())
     return status;
   LabelMap out_labels;
@@ -144,17 +143,21 @@ Status Handle::IngressConnect(ServerContext* context,
       !status.ok())
     return status;
 
-  LabelMap connection_labels;
-  std::shared_ptr<Listener> listener;
-  if (Status status =
-          directory_->LookupListener(out_labels, &connection_labels, &listener);
-      !status.ok())
-    return status;
-  if (Status status =
-          listener->ConnectWithSocket(connection_labels, request->client());
-      !status.ok())
-    return status;
-  return Status::OK;
+  const std::shared_ptr<FileDescriptor>& client = request->client();
+  if (!client)
+    return Status(StatusCode::INVALID_ARGUMENT,
+                  "Ingress must provide a file descriptor");
+  return target_picker_->Pick(
+      directory_, out_labels,
+      [&client, response](const LabelMap& connection_labels,
+                          const std::shared_ptr<Listener>& listener) {
+        if (Status status =
+                listener->ConnectWithSocket(connection_labels, client);
+            !status.ok())
+          return status;
+        *response->mutable_connection_labels() = connection_labels;
+        return Status::OK;
+      });
 }
 
 Status Handle::ResolverStart(ServerContext* context,
@@ -187,7 +190,7 @@ Status Handle::ServerStart(ServerContext* context,
   std::unique_ptr<FileDescriptor> fd1, fd2;
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
-  if (Status status = directory_->RegisterTarget(
+  if (Status status = directory_->Register(
           in_labels, std::make_unique<ServerListener>(std::move(fd1)));
       !status.ok())
     return status;
