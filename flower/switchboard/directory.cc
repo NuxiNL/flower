@@ -32,7 +32,7 @@ Status Directory::RegisterListener(const LabelMap& in_labels,
     MergeLabelMaps(in_labels, listener.first, &unused, &conflicts);
     if (conflicts.empty())
       return Status(StatusCode::FAILED_PRECONDITION,
-                    "Another destination with no conflicting labels exists");
+                    "Another target with no conflicting labels exists");
   }
   listeners_.emplace_back(in_labels, std::move(listener));
   return Status::OK;
@@ -68,7 +68,7 @@ Status Directory::LookupListener(const LabelMap& out_labels,
     }
   }
   if (match == nullptr)
-    return Status(StatusCode::NOT_FOUND, "No matching destination found");
+    return Status(StatusCode::NOT_FOUND, "No matching target found");
   *result = match->second;
   return Status::OK;
 }

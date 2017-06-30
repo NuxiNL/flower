@@ -187,7 +187,7 @@ TEST(Handle, ClientServer) {
     ClientConnectResponse response;
     Status status = handle.ClientConnect(&context, &request, &response);
     EXPECT_EQ(StatusCode::NOT_FOUND, status.error_code());
-    EXPECT_EQ("No matching destination found", status.error_message());
+    EXPECT_EQ("No matching target found", status.error_message());
   }
 
   // Spawn a thread to start processing connections going to
