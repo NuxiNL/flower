@@ -5,26 +5,18 @@ if(NOT APROTOC_COMMAND)
 	message(FATAL_ERROR "Could not find aprotoc, set APROTOC_NAME")
 endif()
 
-add_custom_command(
-	OUTPUT flower/protocol/egress.ad.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/protocol && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/protocol/egress.proto >${CMAKE_BINARY_DIR}/flower/protocol/egress.ad.h
-	DEPENDS ${CMAKE_SOURCE_DIR}/flower/protocol/egress.proto
-)
-add_custom_command(
-	OUTPUT flower/protocol/resolver.ad.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/protocol && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/protocol/resolver.proto >${CMAKE_BINARY_DIR}/flower/protocol/resolver.ad.h
-	DEPENDS ${CMAKE_SOURCE_DIR}/flower/protocol/resolver.proto
-)
-add_custom_command(
-	OUTPUT flower/protocol/server.ad.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/protocol && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/protocol/server.proto >${CMAKE_BINARY_DIR}/flower/protocol/server.ad.h
-	DEPENDS ${CMAKE_SOURCE_DIR}/flower/protocol/server.proto
-)
-add_custom_command(
-	OUTPUT flower/protocol/switchboard.ad.h
-	COMMAND mkdir -p ${CMAKE_BINARY_DIR}/flower/protocol && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/flower/protocol/switchboard.proto >${CMAKE_BINARY_DIR}/flower/protocol/switchboard.ad.h
-	DEPENDS ${CMAKE_SOURCE_DIR}/flower/protocol/switchboard.proto
-)
+function(add_aprotoc base)
+	add_custom_command(
+		OUTPUT ${base}.ad.h
+		COMMAND mkdir -p ${CMAKE_BINARY_DIR}/`dirname ${base}` && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/${base}.proto >${CMAKE_BINARY_DIR}/${base}.ad.h
+		DEPENDS ${CMAKE_SOURCE_DIR}/${base}.proto
+	)
+endfunction()
+
+add_aprotoc(flower/protocol/egress)
+add_aprotoc(flower/protocol/resolver)
+add_aprotoc(flower/protocol/server)
+add_aprotoc(flower/protocol/switchboard)
 
 install(
 	FILES
