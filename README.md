@@ -1,5 +1,5 @@
-flower: a label-based network backplane service
-===============================================
+flow·er: a label-based network backplane service
+================================================
 
 Flower is a service discovery service. It connects clients to servers based on
 their labels, which are called 'connection constraints'. For example, an
