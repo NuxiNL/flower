@@ -1,17 +1,19 @@
-add_executable(
-	flower_resolver_getaddrinfo
-	flower/protocol/resolver.ad.h
-	flower/protocol/switchboard.ad.h
-	flower/resolver/getaddrinfo/getaddrinfo.cc
-)
+if(NOT HAVE_PROGRAM_MAIN)
+	add_executable(
+		flower_resolver_getaddrinfo
+		flower/protocol/resolver.ad.h
+		flower/protocol/switchboard.ad.h
+		flower/resolver/getaddrinfo/getaddrinfo.cc
+	)
 
-target_link_libraries(
-	flower_resolver_getaddrinfo
-	argdata
-	arpc
-)
+	target_link_libraries(
+		flower_resolver_getaddrinfo
+		argdata
+		arpc
+	)
 
-install(
-	TARGETS flower_resolver_getaddrinfo
-	DESTINATION ${CMAKE_INSTALL_BINDIR}
-)
+	install(
+		TARGETS flower_resolver_getaddrinfo
+		DESTINATION ${CMAKE_INSTALL_BINDIR}
+	)
+endif()
