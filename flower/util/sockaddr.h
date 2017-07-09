@@ -49,6 +49,7 @@ void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
   }
 }
 
+#ifndef __CloudABI__
 arpc::Status InitializeSockaddrUn(const char* path, sockaddr_un* sun) {
   if (std::strlen(path) >= sizeof(sun->sun_path))
     return arpc::Status(arpc::StatusCode::INVALID_ARGUMENT, "Path too long");
@@ -56,6 +57,7 @@ arpc::Status InitializeSockaddrUn(const char* path, sockaddr_un* sun) {
   std::strcpy(sun->sun_path, path);
   return arpc::Status::OK;
 }
+#endif
 
 }  // namespace
 }  // namespace util
