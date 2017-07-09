@@ -6,10 +6,16 @@ if(NOT APROTOC_COMMAND)
 endif()
 
 function(add_aprotoc base)
+	get_filename_component(base_dir ${base} DIRECTORY)
 	add_custom_command(
 		OUTPUT ${base}.ad.h
-		COMMAND mkdir -p ${CMAKE_BINARY_DIR}/`dirname ${base}` && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/${base}.proto >${CMAKE_BINARY_DIR}/${base}.ad.h
+		COMMAND mkdir -p ${CMAKE_BINARY_DIR}/${base_dir} && ${APROTOC_COMMAND} <${CMAKE_SOURCE_DIR}/${base}.proto >${CMAKE_BINARY_DIR}/${base}.ad.h
 		DEPENDS ${CMAKE_SOURCE_DIR}/${base}.proto
+	)
+
+	install(
+		FILES ${base}.proto
+		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${base_dir}
 	)
 endfunction()
 
@@ -17,12 +23,3 @@ add_aprotoc(flower/protocol/egress)
 add_aprotoc(flower/protocol/resolver)
 add_aprotoc(flower/protocol/server)
 add_aprotoc(flower/protocol/switchboard)
-
-install(
-	FILES
-		flower/protocol/egress.proto
-		flower/protocol/resolver.proto
-		flower/protocol/server.proto
-		flower/protocol/switchboard.proto
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/flower/protocol
-)
