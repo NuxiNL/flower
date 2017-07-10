@@ -3,10 +3,9 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
-#ifndef FLOWER_UTIL_NULL_OSTREAM_H
-#define FLOWER_UTIL_NULL_OSTREAM_H
+#ifndef FLOWER_UTIL_NULL_STREAMBUF_H
+#define FLOWER_UTIL_NULL_STREAMBUF_H
 
-#include <ostream>
 #include <streambuf>
 
 namespace flower {
@@ -16,23 +15,13 @@ namespace {
 // Stream buffer that discards any data to be written.
 class null_streambuf : public std::streambuf {
  public:
-  std::streamsize xsputn(const char* s, std::streamsize n) override {
-    return n;
-  }
-
   int overflow(int c) override {
     return traits_type::to_int_type(c);
   }
-};
 
-// Output stream that discards any data to be written.
-class null_ostream : public std::ostream {
- public:
-  null_ostream() : std::ostream(&buf_) {
+  std::streamsize xsputn(const char* s, std::streamsize n) override {
+    return n;
   }
-
- private:
-  null_streambuf buf_;
 };
 
 }  // namespace
