@@ -54,7 +54,8 @@ int main(int argc, char* argv[]) {
 
   Configuration configuration;
   configuration.set_listening_socket(std::move(s));
-  configuration.set_error_log(std::make_unique<FileDescriptor>(STDERR_FILENO));
+  configuration.set_logger_output(
+      std::make_unique<FileDescriptor>(STDERR_FILENO));
   Start(configuration);
   return 1;
 }

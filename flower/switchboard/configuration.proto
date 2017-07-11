@@ -27,5 +27,5 @@ package flower.switchboard;
 
 message Configuration {
   fd listening_socket = 1;
-  fd error_log = 2;
+  fd logger_output = 2;
 }
