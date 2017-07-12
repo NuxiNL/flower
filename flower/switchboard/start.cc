@@ -51,7 +51,7 @@ void flower::switchboard::Start(const Configuration& configuration) {
 
   Directory directory;
   TargetPicker target_picker;
-  WorkerPool worker_pool;
+  WorkerPool worker_pool(configuration.worker_pool_size(), &logger);
   for (;;) {
     // Accept incoming connection to switchboard.
     std::unique_ptr<FileDescriptor> connection;

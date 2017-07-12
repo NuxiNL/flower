@@ -56,6 +56,8 @@ int main(int argc, char* argv[]) {
   configuration.set_listening_socket(std::move(s));
   configuration.set_logger_output(
       std::make_unique<FileDescriptor>(STDERR_FILENO));
+  // TODO(ed): Make this configurable.
+  configuration.set_worker_pool_size(10);
   Start(configuration);
   return 1;
 }

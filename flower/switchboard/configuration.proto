@@ -28,4 +28,5 @@ package flower.switchboard;
 message Configuration {
   fd listening_socket = 1;
   fd logger_output = 2;
+  uint32 worker_pool_size = 3;
 }

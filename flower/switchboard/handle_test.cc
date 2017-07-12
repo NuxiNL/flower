@@ -46,7 +46,7 @@ using flower::switchboard::WorkerPool;
 TEST(Handle, Constrain) {
   // A handle starts out without any constraints configured. Create a
   // second handle that has some basic constraints set up.
-  WorkerPool worker_pool;
+  WorkerPool worker_pool(10, nullptr);
   std::shared_ptr<FileDescriptor> connection;
   {
     ConstrainRequest request;
@@ -170,7 +170,7 @@ class LabelEchoingServer final : public Server::Service {
 TEST(Handle, ClientServer) {
   Directory directory;
   TargetPicker target_picker;
-  WorkerPool worker_pool;
+  WorkerPool worker_pool(10, nullptr);
   Handle handle(&directory, &target_picker, &worker_pool);
 
   // Start a server that listens on {host="banana.apple.com"}.
