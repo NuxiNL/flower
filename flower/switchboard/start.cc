@@ -46,7 +46,7 @@ void flower::switchboard::Start(const Configuration& configuration) {
   Logger logger(&logger_ostream);
 
   // Check that all required fields are present.
-  const auto& listening_socket(configuration.listening_socket());
+  const auto& listening_socket = configuration.listening_socket();
   if (!listening_socket) {
     logger.Log() << "Cannot start without a listening socket";
     return;
