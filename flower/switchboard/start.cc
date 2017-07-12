@@ -3,11 +3,9 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
-#include <cstring>
 #include <memory>
 #include <ostream>
 #include <streambuf>
-#include <thread>
 
 #include <arpc++/arpc++.h>
 
@@ -16,14 +14,13 @@
 #include <flower/switchboard/handle.h>
 #include <flower/switchboard/start.h>
 #include <flower/switchboard/target_picker.h>
+#include <flower/switchboard/worker_pool.h>
 #include <flower/util/fd_streambuf.h>
 #include <flower/util/logger.h>
 #include <flower/util/null_streambuf.h>
 #include <flower/util/socket.h>
 
 using arpc::FileDescriptor;
-using arpc::Server;
-using arpc::ServerBuilder;
 using arpc::Status;
 using flower::switchboard::Directory;
 using flower::switchboard::Handle;
@@ -54,6 +51,7 @@ void flower::switchboard::Start(const Configuration& configuration) {
 
   Directory directory;
   TargetPicker target_picker;
+  WorkerPool worker_pool;
   for (;;) {
     // Accept incoming connection to switchboard.
     std::unique_ptr<FileDescriptor> connection;
@@ -65,21 +63,10 @@ void flower::switchboard::Start(const Configuration& configuration) {
       return;
     }
 
-    // Process incoming RPCs in a separate thread.
-    // TODO(ed): Deal with thread creation errors!
-    std::thread([
-      connection{std::move(connection)}, &directory, &logger, &target_picker
-    ]() mutable {
-      ServerBuilder builder(std::move(connection));
-      Handle handle(&directory, &target_picker);
-      builder.RegisterService(&handle);
-      std::shared_ptr<Server> server = builder.Build();
-      int error;
-      while ((error = server->HandleRequest()) == 0) {
-      }
-      if (error > 0)
-        logger.Log() << "Failed to process incoming request: "
-                     << std::strerror(errno);
-    }).detach();
+    if (Status status = worker_pool.StartWorker(
+            std::move(connection),
+            std::make_unique<Handle>(&directory, &target_picker, &worker_pool));
+        !status.ok())
+      logger.Log() << "Failed to start worker: " << status.error_message();
   }
 }

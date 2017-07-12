@@ -12,6 +12,7 @@ add_library(
 	flower/switchboard/server_listener.cc
 	flower/switchboard/start.cc
 	flower/switchboard/target_picker.cc
+	flower/switchboard/worker_pool.cc
 )
 
 add_aprotoc(flower/switchboard/configuration)

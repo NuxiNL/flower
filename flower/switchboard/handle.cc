@@ -21,12 +21,11 @@
 #include <flower/switchboard/listener.h>
 #include <flower/switchboard/server_listener.h>
 #include <flower/switchboard/target_picker.h>
+#include <flower/switchboard/worker_pool.h>
 #include <flower/util/ostream_infix_iterator.h>
 #include <flower/util/socket.h>
 
 using arpc::FileDescriptor;
-using arpc::Server;
-using arpc::ServerBuilder;
 using arpc::ServerContext;
 using arpc::Status;
 using arpc::StatusCode;
@@ -68,23 +67,11 @@ Status Handle::Constrain(ServerContext* context,
   std::unique_ptr<FileDescriptor> fd1, fd2;
   if (Status status = CreateSocketpair(&fd1, &fd2); !status.ok())
     return status;
-  auto handle = std::unique_ptr<Handle>(
-      new Handle(directory_, target_picker_, rights, in_labels, out_labels));
-  // TODO(ed): Deal with thread creation errors!
-  // TODO(ed): Place limits on the number of channels?
-  // TODO(ed): Switch to something event driven?
-  std::thread([
-    connection{std::move(fd1)}, handle{std::move(handle)}
-  ]() mutable {
-    ServerBuilder builder(std::move(connection));
-    builder.RegisterService(handle.get());
-    std::shared_ptr<Server> server = builder.Build();
-    while (server->HandleRequest() == 0) {
-    }
-    // TODO(ed): Log error.
-  }).detach();
-  response->set_switchboard(std::move(fd2));
-  return Status::OK;
+  response->set_switchboard(std::move(fd1));
+  return worker_pool_->StartWorker(
+      std::move(fd2), std::unique_ptr<Handle>(
+                          new Handle(directory_, target_picker_, worker_pool_,
+                                     rights, in_labels, out_labels)));
 }
 
 Status Handle::ClientConnect(ServerContext* context,

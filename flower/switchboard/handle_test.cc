@@ -17,6 +17,7 @@
 #include <flower/switchboard/handle.h>
 #include <flower/switchboard/label_map.h>
 #include <flower/switchboard/target_picker.h>
+#include <flower/switchboard/worker_pool.h>
 
 using arpc::ClientContext;
 using arpc::CreateChannel;
@@ -40,10 +41,12 @@ using flower::switchboard::Directory;
 using flower::switchboard::Handle;
 using flower::switchboard::LabelMap;
 using flower::switchboard::TargetPicker;
+using flower::switchboard::WorkerPool;
 
 TEST(Handle, Constrain) {
   // A handle starts out without any constraints configured. Create a
   // second handle that has some basic constraints set up.
+  WorkerPool worker_pool;
   std::shared_ptr<FileDescriptor> connection;
   {
     ConstrainRequest request;
@@ -58,8 +61,9 @@ TEST(Handle, Constrain) {
 
     ServerContext context;
     ConstrainResponse response;
-    EXPECT_TRUE(
-        Handle(nullptr, nullptr).Constrain(&context, &request, &response).ok());
+    EXPECT_TRUE(Handle(nullptr, nullptr, &worker_pool)
+                    .Constrain(&context, &request, &response)
+                    .ok());
     connection = response.switchboard();
   }
 
@@ -166,7 +170,8 @@ class LabelEchoingServer final : public Server::Service {
 TEST(Handle, ClientServer) {
   Directory directory;
   TargetPicker target_picker;
-  Handle handle(&directory, &target_picker);
+  WorkerPool worker_pool;
+  Handle handle(&directory, &target_picker, &worker_pool);
 
   // Start a server that listens on {host="banana.apple.com"}.
   std::shared_ptr<FileDescriptor> server_fd;
