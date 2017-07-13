@@ -33,6 +33,9 @@ Status WorkerPool::StartWorker(
 
   try {
     // Attempt to create a new thread that processes incoming RPCs.
+    // TODO(ed): Detaching threads makes unit tests unsafe, as the
+    // worker pool and logger can no longer be destroyed. Should the
+    // destructor of this class block?
     std::thread([ this, connection, service{std::move(service)} ]() {
       ServerBuilder builder(connection);
       builder.RegisterService(service.get());
