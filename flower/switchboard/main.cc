@@ -6,6 +6,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <signal.h>
+
 #include <iostream>
 
 #include <arpc++/arpc++.h>
@@ -51,6 +53,8 @@ int main(int argc, char* argv[]) {
     std::cerr << "Failed to listen: " << std::strerror(errno) << std::endl;
     return 1;
   }
+
+  signal(SIGPIPE, SIG_IGN);
 
   Configuration configuration;
   configuration.set_listening_socket(std::move(s));
