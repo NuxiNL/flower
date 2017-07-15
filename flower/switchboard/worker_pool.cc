@@ -3,8 +3,11 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
+#include <cassert>
 #include <cstring>
 #include <memory>
+#include <mutex>
+#include <system_error>
 #include <thread>
 
 #include <arpc++/arpc++.h>
@@ -23,19 +26,15 @@ Status WorkerPool::StartWorker(
     const std::shared_ptr<FileDescriptor>& connection,
     std::unique_ptr<Service> service) {
   // See if we're allowed to spawn another worker.
-  unsigned int workers_remaining = 1;
-  do {
-    if (workers_remaining == 0)
+  {
+    std::lock_guard<std::mutex> lock(lock_);
+    if (workers_running_ >= workers_permitted_)
       return Status(StatusCode::RESOURCE_EXHAUSTED, "Worker pool exhausted");
-  } while (!workers_remaining_.compare_exchange_weak(
-      workers_remaining, workers_remaining - 1, std::memory_order_relaxed,
-      std::memory_order_relaxed));
+    ++workers_running_;
+  }
 
   try {
     // Attempt to create a new thread that processes incoming RPCs.
-    // TODO(ed): Detaching threads makes unit tests unsafe, as the
-    // worker pool and logger can no longer be destroyed. Should the
-    // destructor of this class block?
     std::thread([ this, connection, service{std::move(service)} ]() {
       ServerBuilder builder(connection);
       builder.RegisterService(service.get());
@@ -46,13 +45,27 @@ Status WorkerPool::StartWorker(
       if (error > 0)
         logger_->Log() << "Failed to process incoming request: "
                        << std::strerror(error);
-
-      workers_remaining_.fetch_add(1, std::memory_order_relaxed);
+      DecrementWorkersRunning();
     }).detach();
   } catch (const std::system_error& e) {
     // Creation failed.
-    workers_remaining_.fetch_add(1, std::memory_order_relaxed);
+    DecrementWorkersRunning();
     return Status(StatusCode::INTERNAL, "Failed to create worker thread");
   }
   return Status::OK;
+}
+
+WorkerPool::~WorkerPool() {
+  // Block destruction of this class until all of the workers have
+  // terminated. This is necessary for using this class in cases where
+  // worker pools need to be created temporarily (e.g., unit tests).
+  std::unique_lock<std::mutex> lock(lock_);
+  condvar_.wait(lock, [this]() { return workers_running_ == 0; });
+}
+
+void WorkerPool::DecrementWorkersRunning() {
+  std::lock_guard<std::mutex> lock(lock_);
+  assert(workers_running_ > 0 && "Number of workers cannot be decremented");
+  if (--workers_running_ == 0)
+    condvar_.notify_all();
 }
