@@ -63,5 +63,4 @@ int main(int argc, char* argv[]) {
   // TODO(ed): Make this configurable.
   configuration.set_worker_pool_size(10);
   Start(configuration);
-  return 1;
 }

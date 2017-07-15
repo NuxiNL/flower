@@ -5,8 +5,6 @@
 
 #include <program.h>
 
-#include <cstdlib>
-
 #include <arpc++/arpc++.h>
 
 #include <flower/switchboard/configuration.ad.h>
@@ -21,5 +19,4 @@ void program_main(const argdata_t* ad) {
   ArgdataParser argdata_parser;
   configuration.Parse(*ad, &argdata_parser);
   Start(configuration);
-  std::exit(1);
 }

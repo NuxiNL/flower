@@ -3,6 +3,7 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
+#include <cstdlib>
 #include <memory>
 #include <ostream>
 #include <streambuf>
@@ -46,7 +47,7 @@ void flower::switchboard::Start(const Configuration& configuration) {
   const auto& listening_socket = configuration.listening_socket();
   if (!listening_socket) {
     logger.Log() << "Cannot start without a listening socket";
-    return;
+    std::exit(1);
   }
 
   Directory directory;
@@ -60,7 +61,7 @@ void flower::switchboard::Start(const Configuration& configuration) {
         !status.ok()) {
       logger.Log() << "Failed to accept incoming connection: "
                    << status.error_message();
-      return;
+      std::exit(1);
     }
 
     if (Status status = worker_pool.StartWorker(

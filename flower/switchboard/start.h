@@ -11,7 +11,7 @@ namespace switchboard {
 
 class Configuration;
 
-void Start(const Configuration& configuration);
+[[noreturn]] void Start(const Configuration& configuration);
 
 }  // namespace switchboard
 }  // namespace flower
