@@ -33,7 +33,8 @@ int main(int argc, char* argv[]) {
   // Bind to a UNIX socket.
   std::unique_ptr<FileDescriptor> s;
   if (Status status = CreateSocket(AF_UNIX, &s); !status.ok()) {
-    // TODO(ed): Report error.
+    std::cerr << "Failed to create socket: " << status.error_message()
+              << std::endl;
     return 1;
   }
   union {
@@ -41,7 +42,8 @@ int main(int argc, char* argv[]) {
     sockaddr_un sun;
   } path = {};
   if (Status status = InitializeSockaddrUn(argv[1], &path.sun); !status.ok()) {
-    // TODO(ed): Report error.
+    std::cerr << "Failed to initialize socket address: "
+              << status.error_message() << std::endl;
     return 1;
   }
   std::remove(argv[1]);
