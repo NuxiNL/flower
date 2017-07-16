@@ -59,8 +59,7 @@ void flower::switchboard::Start(const Configuration& configuration) {
     if (Status status = AcceptSocketConnection(*listening_socket, &connection,
                                                nullptr, nullptr);
         !status.ok()) {
-      logger.Log() << "Failed to accept incoming connection: "
-                   << status.error_message();
+      logger.Log() << status.error_message();
       std::exit(1);
     }
 
@@ -68,6 +67,6 @@ void flower::switchboard::Start(const Configuration& configuration) {
             std::move(connection),
             std::make_unique<Handle>(&directory, &target_picker, &worker_pool));
         !status.ok())
-      logger.Log() << "Failed to start worker: " << status.error_message();
+      logger.Log() << status.error_message();
   }
 }
