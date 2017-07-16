@@ -5,11 +5,19 @@
 
 #include <sys/socket.h>
 
+#include <cstdlib>
 #include <memory>
+#include <ostream>
+#include <streambuf>
 
 #include <arpc++/arpc++.h>
 
+#include <flower/ingress/accept/configuration.ad.h>
+#include <flower/ingress/accept/start.h>
 #include <flower/protocol/switchboard.ad.h>
+#include <flower/util/fd_streambuf.h>
+#include <flower/util/logger.h>
+#include <flower/util/null_streambuf.h>
 #include <flower/util/sockaddr.h>
 #include <flower/util/socket.h>
 
@@ -22,13 +30,35 @@ using flower::protocol::switchboard::IngressConnectResponse;
 using flower::protocol::switchboard::Switchboard;
 using flower::util::AcceptSocketConnection;
 using flower::util::ConvertSockaddrToLabels;
+using flower::util::Logger;
+using flower::util::fd_streambuf;
+using flower::util::null_streambuf;
 
-int main() {
-  // TODO(ed): Get file descriptors from somewhere.
-  auto switchboard_fd = std::make_shared<FileDescriptor>(-1);
-  auto accept_fd = std::make_shared<FileDescriptor>(-1);
+void flower::ingress::accept::Start(const Configuration& configuration) {
+  // Make logging work.
+  std::unique_ptr<std::streambuf> logger_streambuf;
+  if (const auto& logger_output = configuration.logger_output();
+      logger_output) {
+    logger_streambuf = std::make_unique<fd_streambuf>(logger_output);
+  } else {
+    logger_streambuf = std::make_unique<null_streambuf>();
+  }
+  std::ostream logger_ostream(logger_streambuf.get());
+  Logger logger(&logger_ostream);
 
-  std::shared_ptr<Channel> channel = CreateChannel(switchboard_fd);
+  // Check that all required fields are present.
+  const auto& listening_socket = configuration.listening_socket();
+  if (!listening_socket) {
+    logger.Log() << "Cannot start without a listening socket";
+    std::exit(1);
+  }
+  const auto& switchboard_socket = configuration.switchboard_socket();
+  if (!switchboard_socket) {
+    logger.Log() << "Cannot start without a switchboard socket";
+    std::exit(1);
+  }
+
+  std::shared_ptr<Channel> channel = CreateChannel(switchboard_socket);
   std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
   for (;;) {
     // Accept an incoming connection.
@@ -38,11 +68,12 @@ int main() {
     } client_address;
     socklen_t client_address_len = sizeof(client_address);
     std::unique_ptr<FileDescriptor> connection;
-    if (Status status = AcceptSocketConnection(
-            *accept_fd, &connection, &client_address.sa, &client_address_len);
+    if (Status status =
+            AcceptSocketConnection(*listening_socket, &connection,
+                                   &client_address.sa, &client_address_len);
         !status.ok()) {
-      // TODO(ed): Log errors!
-      return 1;
+      logger.Log() << status.error_message();
+      std::exit(1);
     }
 
     // Store file descriptors in request and convert peer adress to labels.
@@ -67,9 +98,9 @@ int main() {
     IngressConnectResponse response;
     Status status = stub->IngressConnect(&context, request, &response);
     if (!status.ok()) {
-      // TODO(ed): Log errors!
-      // TODO(ed): Distinguish between transient and non-transient errors.
-      return 1;
+      // TODO(ed): Terminate in case the switchboard connection is dead.
+      logger.Log() << status.error_message();
+      std::exit(1);
     }
   }
 }

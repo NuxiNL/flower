@@ -1,18 +1,20 @@
-if(NOT HAVE_PROGRAM_MAIN)
-	add_executable(
-		flower_ingress_accept
-		flower/protocol/switchboard.ad.h
-		flower/ingress/accept/accept.cc
-	)
+add_aprotoc(flower/ingress/accept/configuration)
 
-	target_link_libraries(
-		flower_ingress_accept
-		argdata
-		arpc
-	)
+add_executable(
+	flower_ingress_accept
+	flower/ingress/accept/${MAIN_SOURCEFILE}
+	flower/ingress/accept/configuration.ad.h
+	flower/ingress/accept/start.cc
+	flower/protocol/switchboard.ad.h
+)
 
-	install(
-		TARGETS flower_ingress_accept
-		DESTINATION ${CMAKE_INSTALL_BINDIR}
-	)
-endif()
+target_link_libraries(
+	flower_ingress_accept
+	argdata
+	arpc
+)
+
+install(
+	TARGETS flower_ingress_accept
+	DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
