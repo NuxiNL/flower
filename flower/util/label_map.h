@@ -3,16 +3,19 @@
 // This file is distributed under a 2-clause BSD license.
 // See the LICENSE file for details.
 
-#ifndef FLOWER_SWITCHBOARD_LABEL_MAP_H
-#define FLOWER_SWITCHBOARD_LABEL_MAP_H
+#ifndef FLOWER_LABEL_MAP_H
+#define FLOWER_LABEL_MAP_H
 
 #include <functional>
 #include <map>
 #include <string>
 #include <vector>
 
+#include <flower/util/map_union_difference.h>
+
 namespace flower {
-namespace switchboard {
+namespace util {
+namespace {
 
 // TODO(ed): Would it make sense not to use maps, but vectors of sorted
 // pairs internally? We never perform lookups, but only apply scanning
@@ -21,9 +24,16 @@ typedef std::map<std::string, std::string, std::less<>> LabelMap;
 typedef std::vector<std::string> LabelVector;
 
 void MergeLabelMaps(const LabelMap& a, const LabelMap& b, LabelMap* merged,
-                    LabelVector* conflicts);
+                    LabelVector* conflicts) {
+  merged->clear();
+  conflicts->clear();
+  flower::util::map_union_difference(a.begin(), a.end(), b.begin(), b.end(),
+                                     std::inserter(*merged, merged->end()),
+                                     std::back_inserter(*conflicts));
+}
 
-}  // namespace switchboard
+}  // namespace
+}  // namespace util
 }  // namespace flower
 
 #endif

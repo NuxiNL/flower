@@ -10,7 +10,7 @@
 
 #include <flower/protocol/egress.ad.h>
 #include <flower/switchboard/egress_listener.h>
-#include <flower/switchboard/label_map.h>
+#include <flower/util/label_map.h>
 
 using arpc::ClientContext;
 using arpc::FileDescriptor;
@@ -20,6 +20,7 @@ using flower::protocol::egress::ConnectRequest;
 using flower::protocol::egress::ConnectResponse;
 using flower::protocol::egress::Egress;
 using flower::switchboard::EgressListener;
+using flower::util::LabelMap;
 
 Status EgressListener::ConnectWithSocket(
     const LabelMap& connection_labels,

@@ -15,9 +15,9 @@
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
 #include <flower/switchboard/handle.h>
-#include <flower/switchboard/label_map.h>
 #include <flower/switchboard/target_picker.h>
 #include <flower/switchboard/worker_pool.h>
+#include <flower/util/label_map.h>
 
 using arpc::ClientContext;
 using arpc::CreateChannel;
@@ -39,9 +39,9 @@ using flower::protocol::switchboard::ServerStartResponse;
 using flower::protocol::switchboard::Switchboard;
 using flower::switchboard::Directory;
 using flower::switchboard::Handle;
-using flower::switchboard::LabelMap;
 using flower::switchboard::TargetPicker;
 using flower::switchboard::WorkerPool;
+using flower::util::LabelMap;
 
 TEST(Handle, Constrain) {
   // A handle starts out without any constraints configured. Create a

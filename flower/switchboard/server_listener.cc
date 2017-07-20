@@ -9,8 +9,8 @@
 #include <arpc++/arpc++.h>
 
 #include <flower/protocol/server.ad.h>
-#include <flower/switchboard/label_map.h>
 #include <flower/switchboard/server_listener.h>
+#include <flower/util/label_map.h>
 #include <flower/util/socket.h>
 
 using arpc::ClientContext;
@@ -22,6 +22,7 @@ using flower::protocol::server::ConnectResponse;
 using flower::protocol::server::Server;
 using flower::switchboard::ServerListener;
 using flower::util::CreateSocketpair;
+using flower::util::LabelMap;
 
 Status ServerListener::ConnectWithSocket(
     const LabelMap& connection_labels,

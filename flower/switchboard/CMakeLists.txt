@@ -8,7 +8,6 @@ add_library(
 	flower/switchboard/directory.cc
 	flower/switchboard/egress_listener.cc
 	flower/switchboard/handle.cc
-	flower/switchboard/label_map.cc
 	flower/switchboard/server_listener.cc
 	flower/switchboard/start.cc
 	flower/switchboard/target_picker.cc

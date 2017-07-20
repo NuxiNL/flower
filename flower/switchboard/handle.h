@@ -11,7 +11,7 @@
 #include <arpc++/arpc++.h>
 
 #include <flower/protocol/switchboard.ad.h>
-#include <flower/switchboard/label_map.h>
+#include <flower/util/label_map.h>
 
 namespace flower {
 namespace switchboard {
@@ -70,7 +70,7 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
   Handle(Directory* directory, TargetPicker* target_picker,
          WorkerPool* worker_pool,
          const std::set<protocol::switchboard::Right>& rights,
-         const LabelMap& in_labels, const LabelMap& out_labels)
+         const util::LabelMap& in_labels, const util::LabelMap& out_labels)
       : directory_(directory),
         target_picker_(target_picker),
         worker_pool_(worker_pool),
@@ -81,17 +81,17 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
 
   arpc::Status CheckRights_(
       const std::set<protocol::switchboard::Right>& requested_rights) const;
-  arpc::Status GetInLabels_(const LabelMap& additional_labels,
-                            LabelMap* merged_labels) const;
-  arpc::Status GetOutLabels_(const LabelMap& additional_labels,
-                             LabelMap* merged_labels) const;
+  arpc::Status GetInLabels_(const util::LabelMap& additional_labels,
+                            util::LabelMap* merged_labels) const;
+  arpc::Status GetOutLabels_(const util::LabelMap& additional_labels,
+                             util::LabelMap* merged_labels) const;
 
   Directory* const directory_;
   TargetPicker* const target_picker_;
   WorkerPool* const worker_pool_;
   const std::set<protocol::switchboard::Right> rights_;
-  const LabelMap in_labels_;
-  const LabelMap out_labels_;
+  const util::LabelMap in_labels_;
+  const util::LabelMap out_labels_;
 };
 
 }  // namespace switchboard

@@ -10,7 +10,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/switchboard/label_map.h>
+#include <flower/util/label_map.h>
 
 namespace flower {
 namespace switchboard {
@@ -21,10 +21,10 @@ class Listener {
   }
 
   virtual arpc::Status ConnectWithSocket(
-      const LabelMap& connection_labels,
+      const util::LabelMap& connection_labels,
       const std::shared_ptr<arpc::FileDescriptor>& fd) = 0;
   virtual arpc::Status ConnectWithoutSocket(
-      const LabelMap& connection_labels,
+      const util::LabelMap& connection_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) = 0;
 };
 

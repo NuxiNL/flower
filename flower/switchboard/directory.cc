@@ -10,13 +10,16 @@
 #include <utility>
 
 #include <flower/switchboard/directory.h>
+#include <flower/util/label_map.h>
 #include <flower/util/ostream_infix_iterator.h>
 
 using arpc::Status;
 using arpc::StatusCode;
 using flower::switchboard::Listener;
 using flower::switchboard::Directory;
-using flower::switchboard::LabelMap;
+using flower::util::LabelMap;
+using flower::util::LabelVector;
+using flower::util::MergeLabelMaps;
 using flower::util::ostream_infix_iterator;
 
 Status Directory::Register(const LabelMap& in_labels, const Target& target) {

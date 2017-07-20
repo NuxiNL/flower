@@ -11,8 +11,8 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/switchboard/label_map.h>
 #include <flower/switchboard/listener.h>
+#include <flower/util/label_map.h>
 
 namespace flower {
 namespace switchboard {
@@ -24,10 +24,10 @@ class ServerListener final : public Listener {
   }
 
   arpc::Status ConnectWithSocket(
-      const LabelMap& connection_labels,
+      const util::LabelMap& connection_labels,
       const std::shared_ptr<arpc::FileDescriptor>& fd) override;
   arpc::Status ConnectWithoutSocket(
-      const LabelMap& connection_labels,
+      const util::LabelMap& connection_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) override;
 
  protected:

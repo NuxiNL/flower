@@ -14,8 +14,8 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/switchboard/label_map.h>
 #include <flower/switchboard/listener.h>
+#include <flower/util/label_map.h>
 
 namespace flower {
 namespace switchboard {
@@ -25,13 +25,13 @@ class Directory {
   // TODO(ed): Let this be a variant between listeners and resolvers.
   typedef std::variant<std::shared_ptr<Listener>> Target;
 
-  arpc::Status Register(const LabelMap& in_labels, const Target& target);
-  arpc::Status Lookup(const LabelMap& out_labels, LabelMap* connection_labels,
-                      Target* target);
+  arpc::Status Register(const util::LabelMap& in_labels, const Target& target);
+  arpc::Status Lookup(const util::LabelMap& out_labels,
+                      util::LabelMap* connection_labels, Target* target);
 
  private:
   std::shared_mutex lock_;
-  std::vector<std::pair<LabelMap, Target>> targets_;
+  std::vector<std::pair<util::LabelMap, Target>> targets_;
 };
 
 }  // namespace switchboard

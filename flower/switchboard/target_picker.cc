@@ -9,9 +9,11 @@
 
 #include <flower/switchboard/directory.h>
 #include <flower/switchboard/target_picker.h>
+#include <flower/util/label_map.h>
 
 using arpc::Status;
 using flower::switchboard::TargetPicker;
+using flower::util::LabelMap;
 
 Status TargetPicker::Pick(
     Directory* directory, const LabelMap& out_labels,

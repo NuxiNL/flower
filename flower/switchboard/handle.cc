@@ -17,11 +17,11 @@
 #include <flower/switchboard/directory.h>
 #include <flower/switchboard/egress_listener.h>
 #include <flower/switchboard/handle.h>
-#include <flower/switchboard/label_map.h>
 #include <flower/switchboard/listener.h>
 #include <flower/switchboard/server_listener.h>
 #include <flower/switchboard/target_picker.h>
 #include <flower/switchboard/worker_pool.h>
+#include <flower/util/label_map.h>
 #include <flower/util/ostream_infix_iterator.h>
 #include <flower/util/socket.h>
 
@@ -45,6 +45,9 @@ using flower::protocol::switchboard::ServerStartRequest;
 using flower::protocol::switchboard::ServerStartResponse;
 using flower::switchboard::Handle;
 using flower::util::CreateSocketpair;
+using flower::util::LabelMap;
+using flower::util::LabelVector;
+using flower::util::MergeLabelMaps;
 using flower::util::ostream_infix_iterator;
 
 Status Handle::Constrain(ServerContext* context,

@@ -11,7 +11,7 @@
 
 #include <arpc++/arpc++.h>
 
-#include <flower/switchboard/label_map.h>
+#include <flower/util/label_map.h>
 
 namespace flower {
 namespace switchboard {
@@ -22,8 +22,8 @@ class Listener;
 class TargetPicker {
  public:
   arpc::Status Pick(
-      Directory* directory, const LabelMap& out_labels,
-      std::function<arpc::Status(const LabelMap& connection_labels,
+      Directory* directory, const util::LabelMap& out_labels,
+      std::function<arpc::Status(const util::LabelMap& connection_labels,
                                  const std::shared_ptr<Listener>& listener)>
           selector);
 };
