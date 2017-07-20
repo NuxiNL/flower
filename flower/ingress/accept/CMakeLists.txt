@@ -12,6 +12,7 @@ target_link_libraries(
 	flower_ingress_accept
 	argdata
 	arpc
+	jsoncpp
 )
 
 install(

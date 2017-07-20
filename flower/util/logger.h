@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <mutex>
 #include <ostream>
+#include <streambuf>
 #include <thread>
 
 namespace flower {
@@ -18,25 +19,18 @@ namespace {
 // Log entry that is in the process of being written. This class
 // serializes output to the stream and also ensures all entries have a
 // trailing newline.
-class LogTransaction {
+class LogTransaction : public std::ostream {
  public:
-  LogTransaction(std::ostream* ostream, std::mutex* ostream_lock)
-      : ostream_(ostream), ostream_guard_(*ostream_lock) {
+  LogTransaction(std::streambuf* streambuf, std::mutex* streambuf_lock)
+      : std::ostream(streambuf), ostream_guard_(*streambuf_lock) {
   }
 
   ~LogTransaction() {
-    *ostream_ << std::endl;
-  }
-
-  template <typename T>
-  LogTransaction& operator<<(const T& v) {
-    *ostream_ << v;
-    return *this;
+    *this << std::endl;
   }
 
  private:
   std::lock_guard<std::mutex> ostream_guard_;
-  std::ostream* ostream_;
 };
 
 // Wrapper around std::ostream for writing log entries.
@@ -45,17 +39,17 @@ class LogTransaction {
 // an output stream with a mutex.
 class Logger {
  public:
-  explicit Logger(std::ostream* ostream) : ostream_(ostream) {
+  explicit Logger(std::streambuf* streambuf) : streambuf_(streambuf) {
   }
 
   // TODO(ed): Should we add support for logging severities?
   LogTransaction Log() {
-    return LogTransaction(ostream_, &ostream_lock_);
+    return LogTransaction(streambuf_, &streambuf_lock_);
   }
 
  private:
-  std::mutex ostream_lock_;
-  std::ostream* ostream_;
+  std::mutex streambuf_lock_;
+  std::streambuf* streambuf_;
 };
 
 }  // namespace

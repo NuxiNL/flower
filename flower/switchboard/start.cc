@@ -5,7 +5,6 @@
 
 #include <cstdlib>
 #include <memory>
-#include <ostream>
 #include <streambuf>
 
 #include <arpc++/arpc++.h>
@@ -40,8 +39,7 @@ void flower::switchboard::Start(const Configuration& configuration) {
   } else {
     logger_streambuf = std::make_unique<null_streambuf>();
   }
-  std::ostream logger_ostream(logger_streambuf.get());
-  Logger logger(&logger_ostream);
+  Logger logger(logger_streambuf.get());
 
   // Check that all required fields are present.
   const auto& listening_socket = configuration.listening_socket();

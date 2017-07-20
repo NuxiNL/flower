@@ -9,4 +9,5 @@ target_link_libraries(
 	arpc
 	argdata
 	gtest_main
+	jsoncpp
 )

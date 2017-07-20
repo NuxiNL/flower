@@ -12,6 +12,8 @@
 #include <vector>
 
 #include <arpc++/arpc++.h>
+#include <json/value.h>
+#include <json/writer.h>
 
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
@@ -194,15 +196,18 @@ Status Handle::CheckRights_(const std::set<Right>& requested_rights) const {
                       std::back_inserter(missing_rights));
   if (!missing_rights.empty()) {
     std::ostringstream ss;
-    ss << "Rights [";
-    bool first = true;
+    ss << "Rights ";
+    Json::Value root;
     for (Right right : missing_rights) {
-      if (!first)
-        ss << ", ";
-      first = false;
-      ss << '"' << Right_Name(right) << '"';
+      if (const char* name = Right_Name(right); name != nullptr)
+        root.append(name);
+      else
+        root.append(right);
     }
-    ss << "] are not present on this handle";
+    Json::StreamWriterBuilder builder;
+    builder["indentation"] = "";
+    builder.newStreamWriter()->write(root, &ss);
+    ss << " are not present on this handle";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
   return Status::OK;

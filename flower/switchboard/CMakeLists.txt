@@ -27,6 +27,7 @@ target_link_libraries(
 	Threads::Threads
 	argdata
 	arpc
+	jsoncpp
 )
 
 install(

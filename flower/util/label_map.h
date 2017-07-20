@@ -12,6 +12,9 @@
 #include <string>
 #include <vector>
 
+#include <json/value.h>
+#include <json/writer.h>
+
 #include <flower/util/map_union_difference.h>
 
 namespace flower {
@@ -33,39 +36,22 @@ void MergeLabelMaps(const LabelMap& a, const LabelMap& b, LabelMap* merged,
                                      std::back_inserter(*conflicts));
 }
 
-template <typename T>
-void StringToJSON(const std::string& label, T* ostream) {
-  // TODO(ed): Escape values properly.
-  // TODO(ed): Ensure we always print proper UTF-8.
-  *ostream << '"' << label << '"';
+void LabelMapToJSON(const LabelMap& labels, std::ostream* ostream) {
+  Json::Value root;
+  for (const auto& label : labels)
+    root[label.first] = label.second;
+  Json::StreamWriterBuilder builder;
+  builder["indentation"] = "";
+  builder.newStreamWriter()->write(root, ostream);
 }
 
-template <typename T>
-void LabelMapToJSON(const LabelMap& labels, T* ostream) {
-  *ostream << "{";
-  bool first = true;
-  for (const auto& label : labels) {
-    if (!first)
-      *ostream << ", ";
-    first = false;
-    StringToJSON(label.first, ostream);
-    *ostream << ": ";
-    StringToJSON(label.second, ostream);
-  }
-  *ostream << "}";
-}
-
-template <typename T>
-void LabelVectorToJSON(const LabelVector& labels, T* ostream) {
-  *ostream << "[";
-  bool first = true;
-  for (const auto& label : labels) {
-    if (!first)
-      *ostream << ", ";
-    first = false;
-    StringToJSON(label, ostream);
-  }
-  *ostream << "]";
+void LabelVectorToJSON(const LabelVector& labels, std::ostream* ostream) {
+  Json::Value root;
+  for (const auto& label : labels)
+    root.append(label);
+  Json::StreamWriterBuilder builder;
+  builder["indentation"] = "";
+  builder.newStreamWriter()->write(root, ostream);
 }
 
 }  // namespace
