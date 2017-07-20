@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <map>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,41 @@ void MergeLabelMaps(const LabelMap& a, const LabelMap& b, LabelMap* merged,
   flower::util::map_union_difference(a.begin(), a.end(), b.begin(), b.end(),
                                      std::inserter(*merged, merged->end()),
                                      std::back_inserter(*conflicts));
+}
+
+template <typename T>
+void StringToJSON(const std::string& label, T* ostream) {
+  // TODO(ed): Escape values properly.
+  // TODO(ed): Ensure we always print proper UTF-8.
+  *ostream << '"' << label << '"';
+}
+
+template <typename T>
+void LabelMapToJSON(const LabelMap& labels, T* ostream) {
+  *ostream << "{";
+  bool first = true;
+  for (const auto& label : labels) {
+    if (!first)
+      *ostream << ", ";
+    first = false;
+    StringToJSON(label.first, ostream);
+    *ostream << ": ";
+    StringToJSON(label.second, ostream);
+  }
+  *ostream << "}";
+}
+
+template <typename T>
+void LabelVectorToJSON(const LabelVector& labels, T* ostream) {
+  *ostream << "[";
+  bool first = true;
+  for (const auto& label : labels) {
+    if (!first)
+      *ostream << ", ";
+    first = false;
+    StringToJSON(label, ostream);
+  }
+  *ostream << "]";
 }
 
 }  // namespace

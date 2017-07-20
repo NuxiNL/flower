@@ -16,6 +16,7 @@
 #include <flower/ingress/accept/start.h>
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/util/fd_streambuf.h>
+#include <flower/util/label_map.h>
 #include <flower/util/logger.h>
 #include <flower/util/null_streambuf.h>
 #include <flower/util/sockaddr.h>
@@ -30,6 +31,8 @@ using flower::protocol::switchboard::IngressConnectResponse;
 using flower::protocol::switchboard::Switchboard;
 using flower::util::AcceptSocketConnection;
 using flower::util::ConvertSockaddrToLabels;
+using flower::util::LabelMapToJSON;
+using flower::util::LogTransaction;
 using flower::util::Logger;
 using flower::util::fd_streambuf;
 using flower::util::null_streambuf;
@@ -99,8 +102,10 @@ void flower::ingress::accept::Start(const Configuration& configuration) {
     Status status = stub->IngressConnect(&context, request, &response);
     if (!status.ok()) {
       // TODO(ed): Terminate in case the switchboard connection is dead.
-      logger.Log() << status.error_message();
-      std::exit(1);
+      LogTransaction log_transaction = logger.Log();
+      log_transaction << "Failed to connect to target ";
+      LabelMapToJSON(request.out_labels(), &log_transaction);
+      log_transaction << ": " << status.error_message();
     }
   }
 }

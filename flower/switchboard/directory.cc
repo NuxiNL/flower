@@ -11,7 +11,6 @@
 
 #include <flower/switchboard/directory.h>
 #include <flower/util/label_map.h>
-#include <flower/util/ostream_infix_iterator.h>
 
 using arpc::Status;
 using arpc::StatusCode;
@@ -19,8 +18,8 @@ using flower::switchboard::Listener;
 using flower::switchboard::Directory;
 using flower::util::LabelMap;
 using flower::util::LabelVector;
+using flower::util::LabelVectorToJSON;
 using flower::util::MergeLabelMaps;
-using flower::util::ostream_infix_iterator;
 
 Status Directory::Register(const LabelMap& in_labels, const Target& target) {
   // Scan through all the targets, ensuring that we don't introduce new
@@ -59,10 +58,8 @@ Status Directory::Lookup(const LabelMap& out_labels,
         MergeLabelMaps(match->first, target.first, &unused, &disambiguation);
         std::ostringstream ss;
         ss << "Labels match multiple targets, "
-              "which can be resolved by adding one of the labels { ";
-        std::copy(disambiguation.begin(), disambiguation.end(),
-                  ostream_infix_iterator<>(ss, ", "));
-        ss << " }";
+              "which can be resolved by adding one of the labels ";
+        LabelVectorToJSON(disambiguation, &ss);
         return Status(StatusCode::FAILED_PRECONDITION, ss.str());
       }
       match = &target;

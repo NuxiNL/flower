@@ -82,7 +82,7 @@ TEST(Handle, Constrain) {
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
     EXPECT_EQ(
-        "Rights { EGRESS_START, INGRESS_CONNECT } "
+        "Rights [EGRESS_START, INGRESS_CONNECT] "
         "are not present on this handle",
         status.error_message());
   }
@@ -102,7 +102,7 @@ TEST(Handle, Constrain) {
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
     EXPECT_EQ(
-        "In-labels { toast } "
+        "In-labels [\"toast\"] "
         "are already defined with different values",
         status.error_message());
   }
@@ -121,7 +121,7 @@ TEST(Handle, Constrain) {
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
     EXPECT_EQ(
-        "Out-labels { dog, sheep } "
+        "Out-labels [\"dog\", \"sheep\"] "
         "are already defined with different values",
         status.error_message());
   }
@@ -173,7 +173,7 @@ TEST(Handle, ClientServer) {
   WorkerPool worker_pool(10, nullptr);
   Handle handle(&directory, &target_picker, &worker_pool);
 
-  // Start a server that listens on {host="banana.apple.com"}.
+  // Start a server that listens on {"host": "banana.apple.com"}.
   std::shared_ptr<FileDescriptor> server_fd;
   {
     ServerStartRequest request;
@@ -186,7 +186,7 @@ TEST(Handle, ClientServer) {
     server_fd = response.server();
   }
 
-  // Connecting to {host="pear.apple.com"} should fail.
+  // Connecting to {"host": "pear.apple.com"} should fail.
   {
     ClientConnectRequest request;
     auto out_labels = request.mutable_out_labels();
@@ -200,7 +200,7 @@ TEST(Handle, ClientServer) {
   }
 
   // Spawn a thread to start processing connections going to
-  // {host="banana.apple.com"}.
+  // {"host": "banana.apple.com"}.
   std::thread server_thread([server_fd]() {
     ServerBuilder builder(server_fd);
     LabelEchoingServer label_echoing_server;
@@ -210,7 +210,8 @@ TEST(Handle, ClientServer) {
     EXPECT_EQ(0, server->HandleRequest());
   });
 
-  // Make a connection to {host="banana.apple.com",datacenter="frankfurt"}.
+  // Make a connection to
+  // {"host": "banana.apple.com", "datacenter": "frankfurt"}.
   // This connection should end up on the server created above.
   {
     ClientConnectRequest request;
@@ -233,8 +234,8 @@ TEST(Handle, ClientServer) {
         buf);
   }
 
-  // Just connecting to {datacenter="frankfurt"} should be sufficient,
-  // as none of the labels contradict with {host="banana.apple.com"}.
+  // Just connecting to {"datacenter": "frankfurt"} should be sufficient,
+  // as none of the labels contradict with {"host": "banana.apple.com"}.
   {
     ClientConnectRequest request;
     auto out_labels = request.mutable_out_labels();
@@ -257,7 +258,7 @@ TEST(Handle, ClientServer) {
         buf);
   }
 
-  // Start a second server that listens on {host="pear.apple.com"}.
+  // Start a second server that listens on {"host": "pear.apple.com"}.
   {
     ServerStartRequest request;
     auto in_labels = request.mutable_in_labels();
@@ -268,7 +269,7 @@ TEST(Handle, ClientServer) {
     EXPECT_TRUE(handle.ServerStart(&context, &request, &response).ok());
   }
 
-  // Connecting to {datacenter="frankfurt"} should now fail, as it
+  // Connecting to {"datacenter": "frankfurt"} should now fail, as it
   // becomes ambiguous which server to pick.
   {
     ClientConnectRequest request;
@@ -281,7 +282,7 @@ TEST(Handle, ClientServer) {
     EXPECT_EQ(StatusCode::FAILED_PRECONDITION, status.error_code());
     EXPECT_EQ(
         "Labels match multiple targets, "
-        "which can be resolved by adding one of the labels { host }",
+        "which can be resolved by adding one of the labels [\"host\"]",
         status.error_message());
   }
 

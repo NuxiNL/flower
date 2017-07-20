@@ -34,10 +34,6 @@ class LogTransaction {
     return *this;
   }
 
-  operator std::ostream&() const {
-    return *ostream_;
-  }
-
  private:
   std::lock_guard<std::mutex> ostream_guard_;
   std::ostream* ostream_;

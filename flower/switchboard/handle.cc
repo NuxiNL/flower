@@ -22,7 +22,6 @@
 #include <flower/switchboard/target_picker.h>
 #include <flower/switchboard/worker_pool.h>
 #include <flower/util/label_map.h>
-#include <flower/util/ostream_infix_iterator.h>
 #include <flower/util/socket.h>
 
 using arpc::FileDescriptor;
@@ -47,8 +46,8 @@ using flower::switchboard::Handle;
 using flower::util::CreateSocketpair;
 using flower::util::LabelMap;
 using flower::util::LabelVector;
+using flower::util::LabelVectorToJSON;
 using flower::util::MergeLabelMaps;
-using flower::util::ostream_infix_iterator;
 
 Status Handle::Constrain(ServerContext* context,
                          const ConstrainRequest* request,
@@ -195,10 +194,15 @@ Status Handle::CheckRights_(const std::set<Right>& requested_rights) const {
                       std::back_inserter(missing_rights));
   if (!missing_rights.empty()) {
     std::ostringstream ss;
-    ss << "Rights { ";
-    std::transform(missing_rights.begin(), missing_rights.end(),
-                   ostream_infix_iterator<>(ss, ", "), Right_Name);
-    ss << " } are not present on this handle";
+    ss << "Rights [";
+    bool first = true;
+    for (Right right : missing_rights) {
+      if (!first)
+        ss << ", ";
+      first = false;
+      ss << Right_Name(right);
+    }
+    ss << "] are not present on this handle";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
   return Status::OK;
@@ -210,10 +214,9 @@ Status Handle::GetInLabels_(const LabelMap& additional_labels,
   MergeLabelMaps(in_labels_, additional_labels, merged_labels, &conflicts);
   if (!conflicts.empty()) {
     std::ostringstream ss;
-    ss << "In-labels { ";
-    std::copy(conflicts.begin(), conflicts.end(),
-              ostream_infix_iterator<>(ss, ", "));
-    ss << " } are already defined with different values";
+    ss << "In-labels ";
+    LabelVectorToJSON(conflicts, &ss);
+    ss << " are already defined with different values";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
   return Status::OK;
@@ -225,10 +228,9 @@ Status Handle::GetOutLabels_(const LabelMap& additional_labels,
   MergeLabelMaps(out_labels_, additional_labels, merged_labels, &conflicts);
   if (!conflicts.empty()) {
     std::ostringstream ss;
-    ss << "Out-labels { ";
-    std::copy(conflicts.begin(), conflicts.end(),
-              ostream_infix_iterator<>(ss, ", "));
-    ss << " } are already defined with different values";
+    ss << "Out-labels ";
+    LabelVectorToJSON(conflicts, &ss);
+    ss << " are already defined with different values";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
   return Status::OK;
