@@ -37,7 +37,7 @@ void MergeLabelMaps(const LabelMap& a, const LabelMap& b, LabelMap* merged,
 }
 
 void LabelMapToJSON(const LabelMap& labels, std::ostream* ostream) {
-  Json::Value root;
+  Json::Value root(Json::objectValue);
   for (const auto& label : labels)
     root[label.first] = label.second;
   Json::StreamWriterBuilder builder;
@@ -46,7 +46,7 @@ void LabelMapToJSON(const LabelMap& labels, std::ostream* ostream) {
 }
 
 void LabelVectorToJSON(const LabelVector& labels, std::ostream* ostream) {
-  Json::Value root;
+  Json::Value root(Json::arrayValue);
   for (const auto& label : labels)
     root.append(label);
   Json::StreamWriterBuilder builder;

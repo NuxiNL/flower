@@ -197,7 +197,7 @@ Status Handle::CheckRights_(const std::set<Right>& requested_rights) const {
   if (!missing_rights.empty()) {
     std::ostringstream ss;
     ss << "Rights ";
-    Json::Value root;
+    Json::Value root(Json::arrayValue);
     for (Right right : missing_rights) {
       if (const char* name = Right_Name(right); name != nullptr)
         root.append(name);
