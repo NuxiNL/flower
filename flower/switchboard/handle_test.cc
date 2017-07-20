@@ -82,7 +82,7 @@ TEST(Handle, Constrain) {
     Status status = stub->Constrain(&context, request, &response);
     EXPECT_EQ(StatusCode::PERMISSION_DENIED, status.error_code());
     EXPECT_EQ(
-        "Rights [EGRESS_START, INGRESS_CONNECT] "
+        "Rights [\"EGRESS_START\", \"INGRESS_CONNECT\"] "
         "are not present on this handle",
         status.error_message());
   }

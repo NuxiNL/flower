@@ -200,7 +200,7 @@ Status Handle::CheckRights_(const std::set<Right>& requested_rights) const {
       if (!first)
         ss << ", ";
       first = false;
-      ss << Right_Name(right);
+      ss << '"' << Right_Name(right) << '"';
     }
     ss << "] are not present on this handle";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
