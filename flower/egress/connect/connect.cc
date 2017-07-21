@@ -38,6 +38,7 @@ using flower::util::CreateSocket;
 using flower::util::InitializeSockaddrUn;
 
 namespace {
+
 class ConnectEgress final : public Egress::Service {
  public:
   Status Connect(ServerContext* context, const ConnectRequest* request,
@@ -130,7 +131,8 @@ class ConnectEgress final : public Egress::Service {
     return Status::OK;
   }
 };
-}
+
+}  // namespace
 
 int main() {
   // TODO(ed): Get file descriptor from somewhere.
