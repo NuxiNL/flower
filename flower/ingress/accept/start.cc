@@ -18,7 +18,6 @@
 #include <flower/util/label_map.h>
 #include <flower/util/logger.h>
 #include <flower/util/null_streambuf.h>
-#include <flower/util/sockaddr.h>
 #include <flower/util/socket.h>
 
 using arpc::Channel;
@@ -30,7 +29,7 @@ using flower::protocol::switchboard::IngressConnectResponse;
 using flower::protocol::switchboard::Switchboard;
 using flower::util::AcceptSocketConnection;
 using flower::util::ConvertSockaddrToLabels;
-using flower::util::LabelMapToJSON;
+using flower::util::LabelMapToJson;
 using flower::util::LogTransaction;
 using flower::util::Logger;
 using flower::util::fd_streambuf;
@@ -101,12 +100,12 @@ void flower::ingress::accept::Start(const Configuration& configuration) {
     if (status.ok()) {
       LogTransaction log_transaction = logger.Log();
       log_transaction << "Successfully forwarded connection with labels ";
-      LabelMapToJSON(response.connection_labels(), &log_transaction);
+      LabelMapToJson(response.connection_labels(), &log_transaction);
     } else {
       // TODO(ed): Terminate in case the switchboard connection is dead.
       LogTransaction log_transaction = logger.Log();
       log_transaction << "Failed to forward connection with labels ";
-      LabelMapToJSON(request.out_labels(), &log_transaction);
+      LabelMapToJson(request.out_labels(), &log_transaction);
       log_transaction << ": " << status.error_message();
     }
   }

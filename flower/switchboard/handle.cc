@@ -48,7 +48,7 @@ using flower::switchboard::Handle;
 using flower::util::CreateSocketpair;
 using flower::util::LabelMap;
 using flower::util::LabelVector;
-using flower::util::LabelVectorToJSON;
+using flower::util::LabelVectorToJson;
 using flower::util::MergeLabelMaps;
 
 Status Handle::Constrain(ServerContext* context,
@@ -220,7 +220,7 @@ Status Handle::GetInLabels_(const LabelMap& additional_labels,
   if (!conflicts.empty()) {
     std::ostringstream ss;
     ss << "In-labels ";
-    LabelVectorToJSON(conflicts, &ss);
+    LabelVectorToJson(conflicts, &ss);
     ss << " are already defined with different values";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }
@@ -234,7 +234,7 @@ Status Handle::GetOutLabels_(const LabelMap& additional_labels,
   if (!conflicts.empty()) {
     std::ostringstream ss;
     ss << "Out-labels ";
-    LabelVectorToJSON(conflicts, &ss);
+    LabelVectorToJson(conflicts, &ss);
     ss << " are already defined with different values";
     return Status(StatusCode::PERMISSION_DENIED, ss.str());
   }

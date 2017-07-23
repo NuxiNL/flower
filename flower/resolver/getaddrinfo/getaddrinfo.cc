@@ -14,7 +14,7 @@
 
 #include <flower/protocol/resolver.ad.h>
 #include <flower/protocol/switchboard.ad.h>
-#include <flower/util/sockaddr.h>
+#include <flower/util/socket.h>
 
 using namespace flower;
 

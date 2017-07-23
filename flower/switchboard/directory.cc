@@ -18,7 +18,7 @@ using flower::switchboard::Listener;
 using flower::switchboard::Directory;
 using flower::util::LabelMap;
 using flower::util::LabelVector;
-using flower::util::LabelVectorToJSON;
+using flower::util::LabelVectorToJson;
 using flower::util::MergeLabelMaps;
 
 Status Directory::Register(const LabelMap& in_labels, const Target& target) {
@@ -59,7 +59,7 @@ Status Directory::Lookup(const LabelMap& out_labels,
         std::ostringstream ss;
         ss << "Labels match multiple targets, "
               "which can be resolved by adding one of the labels ";
-        LabelVectorToJSON(disambiguation, &ss);
+        LabelVectorToJson(disambiguation, &ss);
         return Status(StatusCode::FAILED_PRECONDITION, ss.str());
       }
       match = &target;

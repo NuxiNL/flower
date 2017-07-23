@@ -7,11 +7,13 @@
 #define FLOWER_LABEL_MAP_H
 
 #include <functional>
+#include <istream>
 #include <map>
 #include <ostream>
 #include <string>
 #include <vector>
 
+#include <json/reader.h>
 #include <json/value.h>
 #include <json/writer.h>
 
@@ -31,12 +33,12 @@ void MergeLabelMaps(const LabelMap& a, const LabelMap& b, LabelMap* merged,
                     LabelVector* conflicts) {
   merged->clear();
   conflicts->clear();
-  flower::util::map_union_difference(a.begin(), a.end(), b.begin(), b.end(),
-                                     std::inserter(*merged, merged->end()),
-                                     std::back_inserter(*conflicts));
+  map_union_difference(a.begin(), a.end(), b.begin(), b.end(),
+                       std::inserter(*merged, merged->end()),
+                       std::back_inserter(*conflicts));
 }
 
-void LabelMapToJSON(const LabelMap& labels, std::ostream* ostream) {
+void LabelMapToJson(const LabelMap& labels, std::ostream* ostream) {
   Json::Value root(Json::objectValue);
   for (const auto& label : labels)
     root[label.first] = label.second;
@@ -45,7 +47,28 @@ void LabelMapToJSON(const LabelMap& labels, std::ostream* ostream) {
   builder.newStreamWriter()->write(root, ostream);
 }
 
-void LabelVectorToJSON(const LabelVector& labels, std::ostream* ostream) {
+bool JsonToLabelMap(std::istream* istream, LabelMap* labels) {
+  // Parse the JSON from the input stream.
+  Json::Reader reader;
+  Json::Value root;
+  if (!reader.parse(*istream, root, false))
+    return false;
+  if (!root.isObject())
+    return false;
+
+  // Extract label pairs.
+  labels->clear();
+  for (Json::ValueIterator it = root.begin(); it != root.end(); ++it) {
+    const auto& key = it.key();
+    const auto& value = *it;
+    if (!key.isString() || !value.isString())
+      return false;
+    (*labels)[key.asString()] = value.asString();
+  }
+  return true;
+}
+
+void LabelVectorToJson(const LabelVector& labels, std::ostream* ostream) {
   Json::Value root(Json::arrayValue);
   for (const auto& label : labels)
     root.append(label);
