@@ -16,7 +16,9 @@ using flower::switchboard::Start;
 
 void program_main(const argdata_t* ad) {
   Configuration configuration;
-  ArgdataParser argdata_parser;
-  configuration.Parse(*ad, &argdata_parser);
+  {
+    ArgdataParser argdata_parser;
+    configuration.Parse(*ad, &argdata_parser);
+  }
   Start(configuration);
 }
