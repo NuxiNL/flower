@@ -98,10 +98,14 @@ void flower::ingress::accept::Start(const Configuration& configuration) {
     ClientContext context;
     IngressConnectResponse response;
     Status status = stub->IngressConnect(&context, request, &response);
-    if (!status.ok()) {
+    if (status.ok()) {
+      LogTransaction log_transaction = logger.Log();
+      log_transaction << "Successfully forwarded connection with labels ";
+      LabelMapToJSON(response.connection_labels(), &log_transaction);
+    } else {
       // TODO(ed): Terminate in case the switchboard connection is dead.
       LogTransaction log_transaction = logger.Log();
-      log_transaction << "Failed to connect to target ";
+      log_transaction << "Failed to forward connection with labels ";
       LabelMapToJSON(request.out_labels(), &log_transaction);
       log_transaction << ": " << status.error_message();
     }
