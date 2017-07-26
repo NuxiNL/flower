@@ -16,83 +16,94 @@
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/util/socket.h>
 
-using namespace flower;
+using arpc::ClientContext;
+using arpc::FileDescriptor;
+using arpc::ServerBuilder;
+using arpc::ServerContext;
+using arpc::Status;
+using arpc::StatusCode;
+using flower::protocol::resolver::ResolveRequest;
+using flower::protocol::resolver::ResolveResponse;
+using flower::protocol::resolver::Resolver;
+using flower::protocol::resolver::Target;
+using flower::protocol::switchboard::ResolverStartRequest;
+using flower::protocol::switchboard::ResolverStartResponse;
+using flower::protocol::switchboard::Switchboard;
+using flower::util::AddrinfoDeleter;
+using flower::util::ConvertSockaddrToLabels;
+using flower::util::GetAddrinfo;
 
 namespace {
-class GetaddrinfoResolver final : public protocol::resolver::Resolver::Service {
+class GetaddrinfoResolver final : public Resolver::Service {
  public:
-  arpc::Status Resolve(arpc::ServerContext* context,
-                       const protocol::resolver::ResolveRequest* request,
-                       protocol::resolver::ResolveResponse* response) override {
+  Status Resolve(ServerContext* context, const ResolveRequest* request,
+                 ResolveResponse* response) override {
     // Extract parameters.
     const auto& in_labels = request->resolve_labels();
     const char* hostname;
-    if (arpc::Status status =
-            ExtractLabel(in_labels, "server_hostname", &hostname);
+    if (Status status = ExtractLabel(in_labels, "server_hostname", &hostname);
         !status.ok())
       return status;
     const char* service;
-    if (arpc::Status status =
-            ExtractLabel(in_labels, "server_service", &hostname);
+    if (Status status = ExtractLabel(in_labels, "server_service", &hostname);
         !status.ok())
       return status;
 
     // Invoke getaddrinfo().
-    addrinfo* result;
-    if (int error = getaddrinfo(hostname, service, nullptr, &result);
+    std::unique_ptr<addrinfo, AddrinfoDeleter> result;
+    if (int error = GetAddrinfo(hostname, service, nullptr, &result);
         error != 0)
-      return arpc::Status(arpc::StatusCode::NOT_FOUND, gai_strerror(error));
+      return Status(StatusCode::NOT_FOUND, gai_strerror(error));
 
     // Convert results.
-    for (addrinfo* info = result; info != nullptr; info = info->ai_next) {
-      protocol::resolver::Target* target = response->add_targets();
-      util::ConvertSockaddrToLabels(info->ai_addr, info->ai_addrlen, "server",
-                                    target->mutable_out_labels());
+    for (addrinfo* info = result.get(); info != nullptr; info = info->ai_next) {
+      Target* target = response->add_targets();
+      ConvertSockaddrToLabels(info->ai_addr, info->ai_addrlen, "server",
+                              target->mutable_out_labels());
       target->set_weight(1);
     }
     // TODO(ed): This should be configurable.
     response->set_max_cache_duration_seconds(60);
-    freeaddrinfo(result);
-    return arpc::Status::OK;
+    return Status::OK;
   }
 
  private:
   // Extracts an optional label value from a map of labels, throwing an
   // error when it cannot be used as a C string.
   template <typename T>
-  static arpc::Status ExtractLabel(const T& labels, std::string_view label,
-                                   const char** result) {
+  static Status ExtractLabel(const T& labels, std::string_view label,
+                             const char** result) {
     if (auto match = labels.find(label); match != labels.end()) {
       const std::string& str = match->second;
       if (std::find(str.begin(), str.end(), '\0') != str.end()) {
         std::ostringstream ss;
         ss << "Label " << label
            << " contains a null byte, which is not allowed";
-        return arpc::Status(arpc::StatusCode::INVALID_ARGUMENT, ss.str());
+        return Status(StatusCode::INVALID_ARGUMENT, ss.str());
       }
       *result = str.c_str();
     } else {
       *result = nullptr;
     }
-    return arpc::Status::OK;
+    return Status::OK;
   }
 };
 }
 
 int main() {
   // TODO(ed): Get file descriptor from somewhere.
-  auto switchboard_fd = std::make_shared<arpc::FileDescriptor>(-1);
-  auto channel = arpc::CreateChannel(switchboard_fd);
-  auto stub = protocol::switchboard::Switchboard::NewStub(channel);
+  auto switchboard_fd = std::make_shared<FileDescriptor>(-1);
+  auto channel = CreateChannel(switchboard_fd);
+  auto stub = Switchboard::NewStub(channel);
 
   // Call into the switchboard to register a resolver capable of
   // translating hostname/service labels.
-  arpc::ClientContext context;
-  protocol::switchboard::ResolverStartRequest request;
+  ClientContext context;
+  ResolverStartRequest request;
   request.add_resolve_labels("server_hostname");
   request.add_resolve_labels("server_service");
-  protocol::switchboard::ResolverStartResponse response;
-  arpc::Status status = stub->ResolverStart(&context, request, &response);
+  ResolverStartResponse response;
+  Status status = stub->ResolverStart(&context, request, &response);
   if (!status.ok()) {
     // TODO(ed): Log error.
     return 1;
@@ -103,7 +114,7 @@ int main() {
   }
 
   // Resolver has been registered. Process incoming requests.
-  arpc::ServerBuilder builder(response.resolver());
+  ServerBuilder builder(response.resolver());
   GetaddrinfoResolver getaddrinfo_resolver;
   builder.RegisterService(&getaddrinfo_resolver);
   auto server = builder.Build();
