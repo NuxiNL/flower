@@ -67,7 +67,7 @@ class ConnectEgress final : public Egress::Service {
       hints.ai_family = address_family->second == "inet" ? AF_INET : AF_INET6;
       hints.ai_socktype = SOCK_STREAM;
 
-      struct addrinfo* result;
+      addrinfo* result;
       if (int error = getaddrinfo(address, port, &hints, &result); error != 0)
         return Status(StatusCode::INVALID_ARGUMENT, gai_strerror(error));
       Status status =
