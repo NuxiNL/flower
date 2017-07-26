@@ -164,6 +164,8 @@ arpc::Status CreateListeningNetworkSocket(
     return status;
 
   // Attempt to bind it.
+  int on = 1;
+  setsockopt(s->get(), SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int));
   if (bind(s->get(), res->ai_addr, res->ai_addrlen) != 0) {
     std::ostringstream ss;
     ss << "Failed to bind to " << address << ": " << std::strerror(errno);
