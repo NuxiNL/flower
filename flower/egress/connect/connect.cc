@@ -33,7 +33,9 @@ using flower::protocol::switchboard::EgressStartRequest;
 using flower::protocol::switchboard::EgressStartResponse;
 using flower::protocol::switchboard::EgressStartResponse;
 using flower::protocol::switchboard::Switchboard;
+using flower::util::AddrinfoDeleter;
 using flower::util::CreateSocket;
+using flower::util::GetAddrinfo;
 using flower::util::InitializeSockaddrUn;
 
 namespace {
@@ -66,20 +68,18 @@ class ConnectEgress final : public Egress::Service {
       hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
       hints.ai_family = address_family->second == "inet" ? AF_INET : AF_INET6;
       hints.ai_socktype = SOCK_STREAM;
-
-      addrinfo* result;
-      if (int error = getaddrinfo(address, port, &hints, &result); error != 0)
+      std::unique_ptr<addrinfo, AddrinfoDeleter> result;
+      if (int error = GetAddrinfo(address, port, &hints, &result); error != 0)
         return Status(StatusCode::INVALID_ARGUMENT, gai_strerror(error));
-      Status status =
-          MakeConnection(result->ai_addr, result->ai_addrlen, response);
-      freeaddrinfo(result);
-      return status;
+
+      return MakeConnection(result->ai_addr, result->ai_addrlen, response);
     } else if (address_family->second == "unix") {
       // UNIX sockets: copy the path label into a sockaddr_un structure.
       const char* path;
       if (Status status = ExtractLabel(labels, "server_path", &path);
           !status.ok())
         return status;
+
       union {
         sockaddr sa;
         sockaddr_un sun;
@@ -87,6 +87,7 @@ class ConnectEgress final : public Egress::Service {
       if (Status status = InitializeSockaddrUn(path, &address.sun);
           !status.ok())
         return status;
+
       return MakeConnection(&address.sa, sizeof(address), response);
     } else {
       return Status(StatusCode::INVALID_ARGUMENT,

@@ -24,6 +24,23 @@ namespace flower {
 namespace util {
 namespace {
 
+class AddrinfoDeleter {
+ public:
+  void operator()(addrinfo* ai) const {
+    if (ai != nullptr)
+      freeaddrinfo(ai);
+  }
+};
+
+int GetAddrinfo(const char* hostname, const char* servname,
+                const addrinfo* hints,
+                std::unique_ptr<addrinfo, AddrinfoDeleter>* res) {
+  addrinfo* res_ptr = nullptr;
+  int error = getaddrinfo(hostname, servname, hints, &res_ptr);
+  res->reset(res_ptr);
+  return error;
+}
+
 arpc::Status CreateSocket(int domain,
                           std::unique_ptr<arpc::FileDescriptor>* fd) {
   int ret = socket(domain, SOCK_STREAM, 0);
@@ -146,11 +163,11 @@ arpc::Status CreateListeningNetworkSocket(
   }
 
   // Parse address.
-  struct addrinfo hints = {};
+  addrinfo hints = {};
   hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST | AI_NUMERICSERV;
   hints.ai_socktype = SOCK_STREAM;
-  struct addrinfo* res;
-  if (int error = getaddrinfo(std::string(hostname_begin, hostname_end).c_str(),
+  std::unique_ptr<addrinfo, AddrinfoDeleter> res;
+  if (int error = GetAddrinfo(std::string(hostname_begin, hostname_end).c_str(),
                               servname, &hints, &res);
       error != 0) {
     std::ostringstream ss;
@@ -163,9 +180,13 @@ arpc::Status CreateListeningNetworkSocket(
   if (arpc::Status status = CreateSocket(res->ai_family, &s); !status.ok())
     return status;
 
+  // Allow fast reuse of previously allocated ports.
+  {
+    int on = 1;
+    setsockopt(s->get(), SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int));
+  }
+
   // Attempt to bind it.
-  int on = 1;
-  setsockopt(s->get(), SOL_SOCKET, SO_REUSEADDR, &on, sizeof(int));
   if (bind(s->get(), res->ai_addr, res->ai_addrlen) != 0) {
     std::ostringstream ss;
     ss << "Failed to bind to " << address << ": " << std::strerror(errno);
