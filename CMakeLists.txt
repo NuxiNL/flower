@@ -40,7 +40,7 @@ function(add_aprotoc base)
 	)
 
 	install(
-		FILES ${base}.proto
+		FILES ${base}.proto ${CMAKE_BINARY_DIR}/${base}.ad.h
 		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${base_dir}
 	)
 endfunction()
