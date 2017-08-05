@@ -60,7 +60,7 @@ void flower::ingress::accept::Start(const Configuration& configuration) {
 
   std::shared_ptr<Channel> channel = CreateChannel(switchboard_socket);
   std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
-  for (;;) {
+  while (channel->GetState(false) != ARPC_CHANNEL_SHUTDOWN) {
     // Accept an incoming connection.
     union {
       sockaddr sa;
@@ -102,11 +102,13 @@ void flower::ingress::accept::Start(const Configuration& configuration) {
       log_transaction << "Successfully forwarded connection with labels ";
       LabelMapToJson(response.connection_labels(), &log_transaction);
     } else {
-      // TODO(ed): Terminate in case the switchboard connection is dead.
       LogTransaction log_transaction = logger.Log();
       log_transaction << "Failed to forward connection with labels ";
       LabelMapToJson(request.out_labels(), &log_transaction);
       log_transaction << ": " << status.error_message();
     }
   }
+
+  logger.Log() << "Connection with the switchboard lost.";
+  std::exit(1);
 }
