@@ -26,6 +26,8 @@ class Listener {
   virtual arpc::Status ConnectWithoutSocket(
       const util::LabelMap& connection_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) = 0;
+
+  virtual bool IsDead() = 0;
 };
 
 }  // namespace switchboard

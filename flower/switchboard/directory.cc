@@ -25,10 +25,11 @@ Status Directory::Register(const LabelMap& in_labels, const Target& target) {
   // Scan through all the targets, ensuring that we don't introduce new
   // targets that make lookups ambiguous (e.g., identical, subsets or
   // supersets of each other).
-  // TODO(ed): Prune dead targets.
   // TODO(ed): Could the error message include more details without
   // leaking private information?
   std::unique_lock<std::shared_mutex> lock(lock_);
+  PruneDeadTargets();
+
   for (const auto& target : targets_) {
     LabelMap unused;
     LabelVector conflicts;
@@ -44,6 +45,8 @@ Status Directory::Register(const LabelMap& in_labels, const Target& target) {
 Status Directory::Lookup(const LabelMap& out_labels,
                          LabelMap* connection_labels, Target* result) {
   std::shared_lock<std::shared_mutex> lock(lock_);
+  PruneDeadTargets();
+
   const std::pair<LabelMap, Target>* match = nullptr;
   for (const auto& target : targets_) {
     LabelVector conflicts;
@@ -69,4 +72,12 @@ Status Directory::Lookup(const LabelMap& out_labels,
     return Status(StatusCode::NOT_FOUND, "No matching target found");
   *result = match->second;
   return Status::OK;
+}
+
+void Directory::PruneDeadTargets() {
+  targets_.erase(std::remove_if(
+      targets_.begin(), targets_.end(),
+      [](const std::pair<util::LabelMap, Target>& target) {
+        return std::get<std::shared_ptr<Listener>>(target.second)->IsDead();
+      }), targets_.end());
 }

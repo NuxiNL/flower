@@ -174,7 +174,7 @@ TEST(Handle, ClientServer) {
   Handle handle(&directory, &target_picker, &worker_pool);
 
   // Start a server that listens on {"host":"banana.apple.com"}.
-  std::shared_ptr<FileDescriptor> server_fd;
+  std::shared_ptr<FileDescriptor> banana_fd;
   {
     ServerStartRequest request;
     auto in_labels = request.mutable_in_labels();
@@ -183,7 +183,7 @@ TEST(Handle, ClientServer) {
     ServerContext context;
     ServerStartResponse response;
     EXPECT_TRUE(handle.ServerStart(&context, &request, &response).ok());
-    server_fd = response.server();
+    banana_fd = response.server();
   }
 
   // Connecting to {"host":"pear.apple.com"} should fail.
@@ -201,8 +201,8 @@ TEST(Handle, ClientServer) {
 
   // Spawn a thread to start processing connections going to
   // {"host":"banana.apple.com"}.
-  std::thread server_thread([server_fd]() {
-    ServerBuilder builder(server_fd);
+  std::thread server_thread([banana_fd]() {
+    ServerBuilder builder(banana_fd);
     LabelEchoingServer label_echoing_server;
     builder.RegisterService(&label_echoing_server);
     auto server = builder.Build();
@@ -259,6 +259,7 @@ TEST(Handle, ClientServer) {
   }
 
   // Start a second server that listens on {"host":"pear.apple.com"}.
+  std::shared_ptr<FileDescriptor> pear_fd;
   {
     ServerStartRequest request;
     auto in_labels = request.mutable_in_labels();
@@ -267,6 +268,7 @@ TEST(Handle, ClientServer) {
     ServerContext context;
     ServerStartResponse response;
     EXPECT_TRUE(handle.ServerStart(&context, &request, &response).ok());
+    pear_fd = response.server();
   }
 
   // Connecting to {"datacenter":"frankfurt"} should now fail, as it
@@ -284,6 +286,20 @@ TEST(Handle, ClientServer) {
         "Labels match multiple targets, "
         "which can be resolved by adding one of the labels [\"host\"]",
         status.error_message());
+  }
+
+  // Closing switchboard connections should cause targets to be pruned.
+  pear_fd.reset();
+  {
+    ClientConnectRequest request;
+    auto out_labels = request.mutable_out_labels();
+    (*out_labels)["host"] = "pear.apple.com";
+
+    ServerContext context;
+    ClientConnectResponse response;
+    Status status = handle.ClientConnect(&context, &request, &response);
+    EXPECT_EQ(StatusCode::NOT_FOUND, status.error_code());
+    EXPECT_EQ("No matching target found", status.error_message());
   }
 
   server_thread.join();

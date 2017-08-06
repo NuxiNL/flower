@@ -4,7 +4,6 @@
 // See the LICENSE file for details.
 
 #include <memory>
-#include <mutex>
 
 #include <arpc++/arpc++.h>
 
@@ -31,7 +30,6 @@ Status EgressListener::ConnectWithSocket(
 
 Status EgressListener::ConnectWithoutSocket(
     const LabelMap& connection_labels, std::shared_ptr<FileDescriptor>* fd) {
-  std::lock_guard<std::mutex> lock(channel_lock_);
   std::unique_ptr<Egress::Stub> stub = Egress::NewStub(channel_);
 
   // Forward incoming connection to the egress process.
@@ -46,4 +44,8 @@ Status EgressListener::ConnectWithoutSocket(
                   "Egress did not return a file descriptor");
   *fd = response.server();
   return Status::OK;
+}
+
+bool EgressListener::IsDead() {
+  return channel_->GetState(false) == ARPC_CHANNEL_SHUTDOWN;
 }

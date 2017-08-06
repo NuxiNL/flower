@@ -30,6 +30,8 @@ class Directory {
                       util::LabelMap* connection_labels, Target* target);
 
  private:
+  void PruneDeadTargets();
+
   std::shared_mutex lock_;
   std::vector<std::pair<util::LabelMap, Target>> targets_;
 };

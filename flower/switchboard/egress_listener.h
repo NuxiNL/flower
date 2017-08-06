@@ -7,7 +7,6 @@
 #define FLOWER_SWITCHBOARD_EGRESS_LISTENER_H
 
 #include <memory>
-#include <mutex>
 
 #include <arpc++/arpc++.h>
 
@@ -30,9 +29,10 @@ class EgressListener final : public Listener {
       const util::LabelMap& connection_labels,
       std::shared_ptr<arpc::FileDescriptor>* fd) override;
 
+  bool IsDead() override;
+
  protected:
   std::shared_ptr<arpc::Channel> channel_;
-  std::mutex channel_lock_;
 };
 
 }  // namespace switchboard

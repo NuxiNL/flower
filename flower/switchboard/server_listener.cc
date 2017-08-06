@@ -4,7 +4,6 @@
 // See the LICENSE file for details.
 
 #include <memory>
-#include <mutex>
 
 #include <arpc++/arpc++.h>
 
@@ -27,7 +26,6 @@ using flower::util::LabelMap;
 Status ServerListener::ConnectWithSocket(
     const LabelMap& connection_labels,
     const std::shared_ptr<FileDescriptor>& fd) {
-  std::lock_guard<std::mutex> lock(channel_lock_);
   std::unique_ptr<Server::Stub> stub = Server::NewStub(channel_);
 
   // Forward incoming connection to the server process.
@@ -52,4 +50,8 @@ Status ServerListener::ConnectWithoutSocket(
     return status;
   *fd = std::move(fd2);
   return Status::OK;
+}
+
+bool ServerListener::IsDead() {
+  return channel_->GetState(false) == ARPC_CHANNEL_SHUTDOWN;
 }
