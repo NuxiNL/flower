@@ -21,7 +21,7 @@ namespace {
 // TODO(ed): Add buffering.
 class fd_streambuf : public std::streambuf {
  public:
-  explicit fd_streambuf(const std::shared_ptr<arpc::FileDescriptor> fd)
+  explicit fd_streambuf(const std::shared_ptr<arpc::FileDescriptor>& fd)
       : fd_(fd) {
   }
 
