@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     if (Status status = CreateSwitchboardChannel(
             argv[0],
             {configuration.listen() ? Right::SERVER_START
-                                    : Right::INGRESS_CONNECT},
+                                    : Right::CLIENT_CONNECT},
             argv[1], &switchboard_socket);
         !status.ok()) {
       std::cerr << status.error_message() << std::endl;
