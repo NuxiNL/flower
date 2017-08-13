@@ -78,9 +78,11 @@ void Directory::PruneDeadTargets() {
   // TODO(ed): This invokes O(n) calls to poll(). Maybe we could extract
   // all of the listeners' file descriptors and combine them into a
   // single call to poll()?
-  targets_.erase(std::remove_if(
-      targets_.begin(), targets_.end(),
-      [](const std::pair<util::LabelMap, Target>& target) {
-        return std::get<std::shared_ptr<Listener>>(target.second)->IsDead();
-      }), targets_.end());
+  targets_.erase(
+      std::remove_if(
+          targets_.begin(), targets_.end(),
+          [](const std::pair<util::LabelMap, Target>& target) {
+            return std::get<std::shared_ptr<Listener>>(target.second)->IsDead();
+          }),
+      targets_.end());
 }
