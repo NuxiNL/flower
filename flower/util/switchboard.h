@@ -15,6 +15,7 @@
 
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/util/label_map.h>
+#include <flower/util/socket.h>
 
 namespace flower {
 namespace util {
