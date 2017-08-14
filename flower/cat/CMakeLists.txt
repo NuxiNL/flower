@@ -10,6 +10,7 @@ add_executable(
 
 target_link_libraries(
 	flower_cat
+	Threads::Threads
 	argdata
 	arpc
 	jsoncpp

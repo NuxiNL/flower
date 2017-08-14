@@ -72,6 +72,8 @@ int main(int argc, char* argv[]) {
         std::make_unique<FileDescriptor>(STDOUT_FILENO));
     configuration.set_logger_output(
         std::make_unique<FileDescriptor>(STDERR_FILENO));
+
+    configuration.set_buffer_size(4096);
   }
   Start(configuration);
 }

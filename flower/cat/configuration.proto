@@ -31,4 +31,5 @@ message Configuration {
   fd stream_output = 3;
   fd logger_output = 4;
   bool listen = 5;
+  uint32 buffer_size = 6;
 }
