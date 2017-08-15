@@ -38,30 +38,27 @@ using flower::util::null_streambuf;
 namespace {
 
 void TransferUnidirectionally(FileDescriptor* input, FileDescriptor* output,
-                              size_t buffer_size) {
+                              Logger* logger, size_t buffer_size) {
   std::string buffer;
-  for (;;) {
+  while ((input != nullptr || !buffer.empty()) && output != nullptr) {
     // Call into poll() to wait for reading/writing on the file descriptors.
-    bool work_remaining = false;
+    // TODO(ed): Should this be extended to detect descriptors being
+    // closed, even if there is nothing to be read/written?
     struct pollfd pfds[2] = {};
     if (input != nullptr && buffer.size() < buffer_size) {
-      work_remaining = true;
       pfds[0].fd = input->get();
       pfds[0].events = POLLIN;
     } else {
       pfds[0].fd = -1;
     }
-    if (output != nullptr && buffer.size() > 0) {
-      work_remaining = true;
+    if (buffer.size() > 0) {
       pfds[1].fd = output->get();
       pfds[1].events = POLLOUT;
     } else {
       pfds[1].fd = -1;
     }
-    if (!work_remaining)
-      break;
     if (poll(pfds, 2, -1) == -1) {
-      // TODO(ed): Log error!
+      logger->Log() << "poll(): " << std::strerror(errno);
       break;
     }
 
@@ -74,7 +71,8 @@ void TransferUnidirectionally(FileDescriptor* input, FileDescriptor* output,
       if (read_length > 0) {
         buffer.resize(offset + read_length);
       } else {
-        // TODO(ed): Log error!
+        if (read_length < 0)
+          logger->Log() << "read(): " << std::strerror(errno);
         buffer.resize(offset);
         shutdown(input->get(), SHUT_RD);
         input = nullptr;
@@ -87,7 +85,7 @@ void TransferUnidirectionally(FileDescriptor* input, FileDescriptor* output,
       if (write_length >= 0) {
         buffer.erase(0, write_length);
       } else {
-        // TODO(ed): Log error!
+        logger->Log() << "write(): " << std::strerror(errno);
         shutdown(output->get(), SHUT_WR);
         output = nullptr;
       }
@@ -154,9 +152,10 @@ void flower::cat::Start(const Configuration& configuration) {
   // Run two threads to copy data on the descriptors in both directions.
   std::thread thread_input(TransferUnidirectionally,
                            configuration.stream_input().get(), connection.get(),
-                           buffer_size);
+                           &logger, buffer_size);
   TransferUnidirectionally(connection.get(),
-                           configuration.stream_output().get(), buffer_size);
+                           configuration.stream_output().get(), &logger,
+                           buffer_size);
   thread_input.join();
   std::exit(0);
 }
