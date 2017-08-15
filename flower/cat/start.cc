@@ -11,11 +11,13 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <optional>
 
 #include <arpc++/arpc++.h>
 
 #include <flower/cat/configuration.ad.h>
 #include <flower/cat/start.h>
+#include <flower/protocol/server.ad.h>
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/util/fd_streambuf.h>
 #include <flower/util/label_map.h>
@@ -25,10 +27,17 @@
 using arpc::Channel;
 using arpc::ClientContext;
 using arpc::FileDescriptor;
+using arpc::ServerBuilder;
+using arpc::ServerContext;
 using arpc::Status;
-using flower::protocol::switchboard::Switchboard;
+using flower::protocol::server::ConnectRequest;
+using flower::protocol::server::ConnectResponse;
+using flower::protocol::server::Server;
 using flower::protocol::switchboard::ClientConnectRequest;
 using flower::protocol::switchboard::ClientConnectResponse;
+using flower::protocol::switchboard::ServerStartRequest;
+using flower::protocol::switchboard::ServerStartResponse;
+using flower::protocol::switchboard::Switchboard;
 using flower::util::LabelMapToJson;
 using flower::util::LogTransaction;
 using flower::util::Logger;
@@ -37,6 +46,27 @@ using flower::util::null_streambuf;
 
 namespace {
 
+// Simple service implementation that accepts an incoming connection
+// that can be extracted through GetIncomingConnection().
+class ConnectionExtractor : public Server::Service {
+ public:
+  Status Connect(ServerContext* context, const ConnectRequest* request,
+                 ConnectResponse* response) override {
+    incoming_connection_ = *request;
+    return Status::OK;
+  }
+
+  std::optional<ConnectRequest> GetIncomingConnection() {
+    std::optional<ConnectRequest> result;
+    result.swap(incoming_connection_);
+    return result;
+  }
+
+ private:
+  std::optional<ConnectRequest> incoming_connection_;
+};
+
+// Copies data from one file descriptor to another.
 void TransferUnidirectionally(FileDescriptor* input, FileDescriptor* output,
                               Logger* logger, size_t buffer_size) {
   std::string buffer;
@@ -125,8 +155,45 @@ void flower::cat::Start(const Configuration& configuration) {
   // Establish a connection through the switchboard.
   std::shared_ptr<FileDescriptor> connection;
   if (configuration.listen()) {
-    // TODO(ed): Implement!
+    // Start listening.
+    std::shared_ptr<Channel> channel = CreateChannel(switchboard_socket);
+    std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
+    ClientContext context;
+    ServerStartRequest request;
+    ServerStartResponse response;
+    if (Status status = stub->ServerStart(&context, request, &response);
+        !status.ok()) {
+      logger.Log() << status.error_message();
+      std::exit(1);
+    }
+    if (!response.server()) {
+      logger.Log() << "Switchboard did not return a server";
+      std::exit(1);
+    }
+
+    // Wait for an incoming connection.
+    // TODO(ed): Should we extend ARPC to have the async API, so that we
+    // don't need the ConnectionExtractor class?
+    ServerBuilder builder(response.server());
+    ConnectionExtractor connection_extractor;
+    builder.RegisterService(&connection_extractor);
+    auto server = builder.Build();
+    std::optional<ConnectRequest> connect_request;
+    logger.Log() << "Waiting for an incoming connection";
+    while (!(connect_request = connection_extractor.GetIncomingConnection())) {
+      if (int error = server->HandleRequest(); error != 0) {
+        logger.Log() << "Failed to obtain incoming connection: "
+                     << std::strerror(errno);
+        std::exit(1);
+      }
+    }
+
+    LogTransaction log_transaction = logger.Log();
+    log_transaction << "Established connection with client ";
+    LabelMapToJson(connect_request->connection_labels(), &log_transaction);
+    connection = connect_request->client();
   } else {
+    // Connect to a server.
     std::shared_ptr<Channel> channel = CreateChannel(switchboard_socket);
     std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
     ClientContext context;
@@ -137,6 +204,7 @@ void flower::cat::Start(const Configuration& configuration) {
       logger.Log() << status.error_message();
       std::exit(1);
     }
+
     LogTransaction log_transaction = logger.Log();
     log_transaction << "Established connection with server ";
     LabelMapToJson(response.connection_labels(), &log_transaction);
