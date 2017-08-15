@@ -42,8 +42,6 @@ void TransferUnidirectionally(FileDescriptor* input, FileDescriptor* output,
   std::string buffer;
   while ((input != nullptr || !buffer.empty()) && output != nullptr) {
     // Call into poll() to wait for reading/writing on the file descriptors.
-    // TODO(ed): Should this be extended to detect descriptors being
-    // closed, even if there is nothing to be read/written?
     struct pollfd pfds[2] = {};
     if (input != nullptr && buffer.size() < buffer_size) {
       pfds[0].fd = input->get();
