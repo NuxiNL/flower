@@ -38,7 +38,7 @@ vice versa.
 
 An interesting aspect of the Switchboard is that these labels also act
 as a security mechanism. Handles to the Switchboard have a set of labels
-attached to it that can only be extended over time. Every time a new
+attached to them that can only be extended over time. Every time a new
 label is attached, the size of the space in which it can establish
 connections is reduced. The Switchboard's security model is
 capability-based.
