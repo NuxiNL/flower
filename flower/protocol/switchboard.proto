@@ -25,6 +25,32 @@ syntax = 'proto3';
 
 package flower.protocol.switchboard;
 
+service Switchboard {
+  // Creates a new switchboard connection that is at least as
+  // restrictive as the current connection.
+  rpc Constrain(ConstrainRequest) returns (ConstrainResponse);
+
+  // Connects a client to a server or an engress.
+  rpc ClientConnect(ClientConnectRequest) returns (ClientConnectResponse);
+
+  // Registers and starts an egress. Egresses may only receive
+  // connection requests from clients. They may not receive connection
+  // requests from ingresses, as both parties would end up providing a
+  // socket.
+  rpc EgressStart(EgressStartRequest) returns (EgressStartResponse);
+
+  // Connects an ingress to a server. They may not connect to egresses,
+  // from ingresses, as both parties would end up providing a socket.
+  rpc IngressConnect(IngressConnectRequest) returns (IngressConnectResponse);
+
+  // TODO(ed): Make this complete.
+  rpc ResolverStart(ResolverStartRequest) returns (ResolverStartResponse);
+
+  // Registers and starts a server.
+  rpc ServerStart(ServerStartRequest) returns (ServerStartResponse);
+}
+
+// RPCs allowed to be performed on a switchboard connection.
 enum Right {
   CLIENT_CONNECT = 0;
   EGRESS_START = 1;
@@ -50,32 +76,46 @@ message ConstrainRequest {
 }
 
 message ConstrainResponse {
+  // A new switchboard connection, having the requested constraints in
+  // place.
   fd switchboard = 1;
 }
 
 message ClientConnectRequest {
+  // Additional labels that should be attached to the connection.
   map<string, string> out_labels = 1;
 }
 
 message ClientConnectResponse {
+  // Socket file descriptor that provides a stream to the server.
   fd server = 1;
+
+  // Union of the labels provided by the client and server.
   map<string, string> connection_labels = 2;
 }
 
 message EgressStartRequest {
+  // Additional labels that should be attached to connections.
   map<string, string> in_labels = 1;
 }
 
 message EgressStartResponse {
+  // A new RPC channel to which the switchboard will send connection
+  // requests for every matching connection attempt it receives.
   fd egress = 1;
 }
 
 message IngressConnectRequest {
+  // Socket file descriptor of an incoming connection that should be
+  // passed to a server listening on the switchboard.
   fd client = 1;
+
+  // Additional labels that should be attached to the connection.
   map<string, string> out_labels = 2;
 }
 
 message IngressConnectResponse {
+  // Union of the labels provided by the client and server.
   map<string, string> connection_labels = 1;
 }
 
@@ -90,19 +130,12 @@ message ResolverStartResponse {
 }
 
 message ServerStartRequest {
+  // Additional labels that should be attached to connections.
   map<string, string> in_labels = 2;
 }
 
 message ServerStartResponse {
+  // A new RPC channel to which the switchboard will send connection
+  // requests for every matching connection attempt it receives.
   fd server = 1;
-}
-
-service Switchboard {
-  rpc Constrain(ConstrainRequest) returns (ConstrainResponse);
-
-  rpc ClientConnect(ClientConnectRequest) returns (ClientConnectResponse);
-  rpc EgressStart(EgressStartRequest) returns (EgressStartResponse);
-  rpc IngressConnect(IngressConnectRequest) returns (IngressConnectResponse);
-  rpc ResolverStart(ResolverStartRequest) returns (ResolverStartResponse);
-  rpc ServerStart(ServerStartRequest) returns (ServerStartResponse);
 }
