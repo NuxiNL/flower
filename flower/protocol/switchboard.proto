@@ -40,7 +40,7 @@ service Switchboard {
   rpc EgressStart(EgressStartRequest) returns (EgressStartResponse);
 
   // Connects an ingress to a server. They may not connect to egresses,
-  // from ingresses, as both parties would end up providing a socket.
+  // as both parties would end up providing a socket.
   rpc IngressConnect(IngressConnectRequest) returns (IngressConnectResponse);
 
   // TODO(ed): Make this complete.
