@@ -4,12 +4,12 @@
 
 On most operating systems that are in use today, programs are allowed to
 create connections to other systems on the network rather liberally. As
-this is often a bad thing, systems often provide additional kernel
-subsystems that allow you to restrict this, called _firewalls_.  The
-downside of firewalls are that they will always remain _bolted on to the
-system_. There is no way a regular, unprivileged processes can
-programmatically (and portably) place restrictions on subprocesses they
-are about to spawn.
+this is often a bad thing, systems provide additional kernel subsystems
+that allow you to restrict this, called _firewalls_. The downside of
+firewalls are that they will always remain _bolted on to the system_.
+There is no way a regular, unprivileged processes can programmatically
+(and portably) place restrictions on subprocesses they are about to
+spawn.
 
 Programming interfaces such as the Berkeley sockets API and
 `getaddrinfo()` are also strongly coupled against IPv4, IPv6, TCP, UDP
