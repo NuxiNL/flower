@@ -5,6 +5,7 @@ add_executable(
 	flower/cat/${MAIN_SOURCEFILE}
 	flower/cat/configuration.ad.h
 	flower/cat/start.cc
+	flower/protocol/server.ad.h
 	flower/protocol/switchboard.ad.h
 )
 
