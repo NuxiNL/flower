@@ -55,7 +55,7 @@ include(flower/resolver/getaddrinfo/CMakeLists.txt)
 include(flower/switchboard/CMakeLists.txt)
 
 if(BUILD_TESTS)
-  add_subdirectory(contrib/googletest-release-1.8.0/googletest)
+  add_subdirectory(contrib/googletest-release-1.8.0/googletest EXCLUDE_FROM_ALL)
   include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
   include(unittests/CMakeLists.txt)
 endif(BUILD_TESTS)
