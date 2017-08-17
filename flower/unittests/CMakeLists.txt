@@ -1,10 +1,10 @@
 add_executable(
-	unittests
+	flower_unittests
 	flower/switchboard/handle_test.cc
 )
 
 target_link_libraries(
-	unittests
+	flower_unittests
 	flower_switchboard_lib
 	arpc
 	argdata
