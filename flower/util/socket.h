@@ -41,18 +41,6 @@ int GetAddrinfo(const char* hostname, const char* servname,
   return error;
 }
 
-arpc::Status CreateSocket(int domain,
-                          std::unique_ptr<arpc::FileDescriptor>* fd) {
-  int ret = socket(domain, SOCK_STREAM, 0);
-  if (ret < 0) {
-    std::ostringstream ss;
-    ss << "Failed to create socket: " << std::strerror(errno);
-    return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
-  }
-  *fd = std::make_unique<arpc::FileDescriptor>(ret);
-  return arpc::Status::OK;
-}
-
 arpc::Status CreateSocketpair(std::unique_ptr<arpc::FileDescriptor>* fd1,
                               std::unique_ptr<arpc::FileDescriptor>* fd2) {
   int fds[2];
@@ -108,6 +96,18 @@ void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
 }
 
 #ifndef __CloudABI__
+
+arpc::Status CreateSocket(int domain,
+                          std::unique_ptr<arpc::FileDescriptor>* fd) {
+  int ret = socket(domain, SOCK_STREAM, 0);
+  if (ret < 0) {
+    std::ostringstream ss;
+    ss << "Failed to create socket: " << std::strerror(errno);
+    return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
+  }
+  *fd = std::make_unique<arpc::FileDescriptor>(ret);
+  return arpc::Status::OK;
+}
 
 arpc::Status InitializeSockaddrUn(const char* path, sockaddr_un* sun) {
   if (std::strlen(path) >= sizeof(sun->sun_path))
