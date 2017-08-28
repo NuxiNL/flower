@@ -49,8 +49,9 @@ Status Directory::Lookup(const LabelMap& out_labels,
 
   const std::pair<LabelMap, Target>* match = nullptr;
   for (const auto& target : targets_) {
+    LabelMap merged;
     LabelVector conflicts;
-    MergeLabelMaps(out_labels, target.first, connection_labels, &conflicts);
+    MergeLabelMaps(out_labels, target.first, &merged, &conflicts);
     if (conflicts.empty()) {
       // Found a matching target. Continue searching, ensuring that this
       // is the only target that matches these constraints. In case of
@@ -66,6 +67,7 @@ Status Directory::Lookup(const LabelMap& out_labels,
         return Status(StatusCode::FAILED_PRECONDITION, ss.str());
       }
       match = &target;
+      *connection_labels = merged;
     }
   }
   if (match == nullptr)
