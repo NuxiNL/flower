@@ -194,7 +194,7 @@ arpc::Status CreateListeningNetworkSocket(
   }
 
   // Listen for incoming connections.
-  if (listen(s->get(), 0) != 0) {
+  if (listen(s->get(), SOMAXCONN) != 0) {
     std::ostringstream ss;
     ss << "Failed to listen for incoming connections: " << std::strerror(errno);
     return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
@@ -226,7 +226,7 @@ arpc::Status CreateListeningUnixSocket(
   }
 
   // Listen for incoming connections.
-  if (listen(s->get(), 0) != 0) {
+  if (listen(s->get(), SOMAXCONN) != 0) {
     std::ostringstream ss;
     ss << "Failed to listen for incoming connections: " << std::strerror(errno);
     return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
