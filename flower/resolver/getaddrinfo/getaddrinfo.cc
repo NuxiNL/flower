@@ -34,6 +34,7 @@ using flower::util::ConvertSockaddrToLabels;
 using flower::util::GetAddrinfo;
 
 namespace {
+
 class GetaddrinfoResolver final : public Resolver::Service {
  public:
   Status Resolve(ServerContext* context, const ResolveRequest* request,
@@ -88,7 +89,8 @@ class GetaddrinfoResolver final : public Resolver::Service {
     return Status::OK;
   }
 };
-}
+
+}  // namespace
 
 int main() {
   // TODO(ed): Get file descriptor from somewhere.
