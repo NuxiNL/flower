@@ -41,32 +41,6 @@ int GetAddrinfo(const char* hostname, const char* servname,
   return error;
 }
 
-arpc::Status CreateSocketpair(std::unique_ptr<arpc::FileDescriptor>* fd1,
-                              std::unique_ptr<arpc::FileDescriptor>* fd2) {
-  int fds[2];
-  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) != 0) {
-    std::ostringstream ss;
-    ss << "Failed to create socket pair: " << std::strerror(errno);
-    return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
-  }
-  *fd1 = std::make_unique<arpc::FileDescriptor>(fds[0]);
-  *fd2 = std::make_unique<arpc::FileDescriptor>(fds[1]);
-  return arpc::Status::OK;
-}
-
-arpc::Status AcceptSocketConnection(const arpc::FileDescriptor& fd,
-                                    std::unique_ptr<arpc::FileDescriptor>* conn,
-                                    sockaddr* sa, socklen_t* salen) {
-  int ret = accept(fd.get(), sa, salen);
-  if (ret < 0) {
-    std::ostringstream ss;
-    ss << "Failed to accept incoming connection: " << std::strerror(errno);
-    return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
-  }
-  *conn = std::make_unique<arpc::FileDescriptor>(ret);
-  return arpc::Status::OK;
-}
-
 template <typename T>
 void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
                              const std::string& prefix, T* map) {
@@ -93,6 +67,19 @@ void ConvertSockaddrToLabels(const sockaddr* sa, socklen_t salen,
     (*map)[prefix + "_address"] = address;
     (*map)[prefix + "_port"] = port;
   }
+}
+
+arpc::Status CreateSocketpair(std::unique_ptr<arpc::FileDescriptor>* fd1,
+                              std::unique_ptr<arpc::FileDescriptor>* fd2) {
+  int fds[2];
+  if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) != 0) {
+    std::ostringstream ss;
+    ss << "Failed to create socket pair: " << std::strerror(errno);
+    return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
+  }
+  *fd1 = std::make_unique<arpc::FileDescriptor>(fds[0]);
+  *fd2 = std::make_unique<arpc::FileDescriptor>(fds[1]);
+  return arpc::Status::OK;
 }
 
 #ifndef __CloudABI__
@@ -242,6 +229,19 @@ arpc::Status CreateListeningSocket(
   if (address[0] == '/')
     return CreateListeningUnixSocket(address, listening_socket);
   return CreateListeningNetworkSocket(address, listening_socket);
+}
+
+arpc::Status AcceptSocketConnection(const arpc::FileDescriptor& fd,
+                                    std::unique_ptr<arpc::FileDescriptor>* conn,
+                                    sockaddr* sa, socklen_t* salen) {
+  int ret = accept(fd.get(), sa, salen);
+  if (ret < 0) {
+    std::ostringstream ss;
+    ss << "Failed to accept incoming connection: " << std::strerror(errno);
+    return arpc::Status(arpc::StatusCode::INTERNAL, ss.str());
+  }
+  *conn = std::make_unique<arpc::FileDescriptor>(ret);
+  return arpc::Status::OK;
 }
 
 #endif

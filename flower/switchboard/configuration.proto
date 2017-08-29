@@ -25,8 +25,22 @@ syntax = 'proto3';
 
 package flower.switchboard;
 
+// Startup configuration for the Flower switchboard.
 message Configuration {
+  // On non-CloudABI systems: a bound UNIX domain socket on which new
+  // channels can be opened.
+  //
+  // On CloudABI: ignored.
   fd listening_socket = 1;
+
+  // Stream to which logging output should be written.
   fd logger_output = 2;
+
+  // Maximum number of worker threads permitted.
   uint32 worker_pool_size = 3;
+
+  // A socket endpoint that should act as the initial channel to the
+  // switchboard. Useful for running the switchboard on CloudABI, which
+  // does not support accept().
+  fd initial_channel = 4;
 }
