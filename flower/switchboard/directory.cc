@@ -14,8 +14,8 @@
 
 using arpc::Status;
 using arpc::StatusCode;
-using flower::switchboard::Listener;
 using flower::switchboard::Directory;
+using flower::switchboard::Listener;
 using flower::util::LabelMap;
 using flower::util::LabelVector;
 using flower::util::LabelVectorToJson;
