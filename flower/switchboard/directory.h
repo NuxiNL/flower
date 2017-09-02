@@ -7,7 +7,7 @@
 #define FLOWER_SWITCHBOARD_DIRECTORY_H
 
 #include <memory>
-#include <shared_mutex>
+#include <mutex>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -32,7 +32,7 @@ class Directory {
  private:
   void PruneDeadTargets();
 
-  std::shared_mutex lock_;
+  std::mutex lock_;
   std::vector<std::pair<util::LabelMap, Target>> targets_;
 };
 

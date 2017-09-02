@@ -4,7 +4,7 @@
 // See the LICENSE file for details.
 
 #include <memory>
-#include <shared_mutex>
+#include <mutex>
 #include <sstream>
 #include <thread>
 #include <utility>
@@ -27,7 +27,7 @@ Status Directory::Register(const LabelMap& in_labels, const Target& target) {
   // supersets of each other).
   // TODO(ed): Could the error message include more details without
   // leaking private information?
-  std::unique_lock<std::shared_mutex> lock(lock_);
+  std::unique_lock<std::mutex> lock(lock_);
   PruneDeadTargets();
 
   for (const auto& target : targets_) {
@@ -44,7 +44,7 @@ Status Directory::Register(const LabelMap& in_labels, const Target& target) {
 
 Status Directory::Lookup(const LabelMap& out_labels,
                          LabelMap* connection_labels, Target* result) {
-  std::shared_lock<std::shared_mutex> lock(lock_);
+  std::unique_lock<std::mutex> lock(lock_);
   PruneDeadTargets();
 
   const std::pair<LabelMap, Target>* match = nullptr;
