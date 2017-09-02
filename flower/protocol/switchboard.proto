@@ -30,7 +30,7 @@ service Switchboard {
   // restrictive as the current connection.
   rpc Constrain(ConstrainRequest) returns (ConstrainResponse);
 
-  // Connects a client to a server or an engress.
+  // Connects a client to a server or an egress.
   rpc ClientConnect(ClientConnectRequest) returns (ClientConnectResponse);
 
   // Registers and starts an egress. Egresses may only receive
