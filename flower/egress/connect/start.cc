@@ -16,10 +16,16 @@
 
 #include <arpc++/arpc++.h>
 
+#include <flower/egress/connect/configuration.ad.h>
+#include <flower/egress/connect/start.h>
 #include <flower/protocol/egress.ad.h>
 #include <flower/protocol/switchboard.ad.h>
+#include <flower/util/fd_streambuf.h>
+#include <flower/util/logger.h>
+#include <flower/util/null_streambuf.h>
 #include <flower/util/socket.h>
 
+using arpc::Channel;
 using arpc::ClientContext;
 using arpc::FileDescriptor;
 using arpc::ServerBuilder;
@@ -37,6 +43,9 @@ using flower::util::AddrinfoDeleter;
 using flower::util::CreateSocket;
 using flower::util::GetAddrinfo;
 using flower::util::InitializeSockaddrUn;
+using flower::util::Logger;
+using flower::util::fd_streambuf;
+using flower::util::null_streambuf;
 
 namespace {
 
@@ -134,11 +143,26 @@ class ConnectEgress final : public Egress::Service {
 
 }  // namespace
 
-int main() {
-  // TODO(ed): Get file descriptor from somewhere.
-  auto switchboard_fd = std::make_shared<FileDescriptor>(-1);
-  auto channel = CreateChannel(switchboard_fd);
-  auto stub = Switchboard::NewStub(channel);
+void flower::egress::connect::Start(const Configuration& configuration) {
+  // Make logging work.
+  std::unique_ptr<std::streambuf> logger_streambuf;
+  if (const auto& logger_output = configuration.logger_output();
+      logger_output) {
+    logger_streambuf = std::make_unique<fd_streambuf>(logger_output);
+  } else {
+    logger_streambuf = std::make_unique<null_streambuf>();
+  }
+  Logger logger(logger_streambuf.get());
+
+  // Check that all required fields are present.
+  const auto& switchboard_socket = configuration.switchboard_socket();
+  if (!switchboard_socket) {
+    logger.Log() << "Cannot start without a switchboard socket";
+    std::exit(1);
+  }
+
+  std::shared_ptr<Channel> channel = CreateChannel(switchboard_socket);
+  std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
 
   // Call into the switchboard to register a egress capable of
   // translating hostname/service labels.
@@ -147,12 +171,12 @@ int main() {
   EgressStartResponse response;
   Status status = stub->EgressStart(&context, request, &response);
   if (!status.ok()) {
-    // TODO(ed): Log error.
-    return 1;
+    logger.Log() << status.error_message();
+    std::exit(1);
   }
   if (!response.egress()) {
-    // TODO(ed): File descriptor must be present.
-    return 1;
+    logger.Log() << "Switchboard did not return an egress";
+    std::exit(1);
   }
 
   // Egress has been registered. Process incoming requests.
@@ -160,8 +184,13 @@ int main() {
   ConnectEgress connect_egress;
   builder.RegisterService(&connect_egress);
   auto server = builder.Build();
-  while (server->HandleRequest() == 0) {
+  int error;
+  while ((error = server->HandleRequest()) == 0) {
   }
-  // TODO(ed): Log error.
-  return 1;
+  if (error > 0) {
+    logger.Log() << "Failed to process incoming request: "
+                 << std::strerror(error);
+    std::exit(1);
+  }
+  std::exit(0);
 }
