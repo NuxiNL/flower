@@ -54,14 +54,12 @@ that allows you to easily start clients and servers. A simple one-shot
 server can be started by running:
 
     flower_cat -l \
-        /var/run/flower \
-        '{"program": "demo", "server_name": "My server v0.1"}'
+        /var/run/flower '{"program": "demo", "server_name": "My server v0.1"}'
 
 A client can be started similarly:
 
     flower_cat \
-        /var/run/flower \
-        '{"program": "demo", "client_name": "My client v0.1"}'
+        /var/run/flower '{"program": "demo", "client_name": "My client v0.1"}'
 
 This will establish a connection, having labels:
 
@@ -71,10 +69,23 @@ This will establish a connection, having labels:
         "server_name": "My server v0.1"
     }
 
+Other utilities shipped with Flower include `flower_ingress_accept` and
+`flower_egress_connect`. These utilities act as bindings for `accept()`
+and `connect()`, allowing processes to interact with the local network.
+For example, the following command shows how incoming network traffic on
+TCP port 80 can be delivered to a running server:
+
+    flower_ingress_accept \
+        0.0.0.0:80 \
+        /var/run/flower '{"program": "demo"}'
+
+Connection metadata (client/server address/port) is attached as
+additional labels.
+
 Of course, it makes far more sense to communicate with the Switchboard
-programmatically, as opposed to using `flower_cat`. The Switchboard
-makes use of [ARPC](https://github.com/NuxiNL/arpc). Its protocol is
-specified in a [.proto file](flower/protocol/switchboard.proto).
+programmatically, as opposed to using the utilities above. The
+Switchboard makes use of [ARPC](https://github.com/NuxiNL/arpc). Its
+protocol is specified in a [.proto file](flower/protocol/switchboard.proto).
 
 ## Motivation
 
