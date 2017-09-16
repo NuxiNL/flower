@@ -38,6 +38,8 @@ using flower::protocol::switchboard::EgressStartRequest;
 using flower::protocol::switchboard::EgressStartResponse;
 using flower::protocol::switchboard::IngressConnectRequest;
 using flower::protocol::switchboard::IngressConnectResponse;
+using flower::protocol::switchboard::ListRequest;
+using flower::protocol::switchboard::ListResponse;
 using flower::protocol::switchboard::ResolverStartRequest;
 using flower::protocol::switchboard::ResolverStartResponse;
 using flower::protocol::switchboard::Right;
@@ -186,6 +188,19 @@ Status Handle::ServerStart(ServerContext* context,
       !status.ok())
     return status;
   response->set_server(std::move(fd2));
+  return Status::OK;
+}
+
+Status Handle::List(ServerContext* context, const ListRequest* request,
+                    ListResponse* response) {
+  if (Status status = CheckRights_({Right::LIST}); !status.ok())
+    return status;
+  LabelMap out_labels;
+  if (Status status = GetOutLabels_(request->out_labels(), &out_labels);
+      !status.ok())
+    return status;
+
+  directory_->List(out_labels, response);
   return Status::OK;
 }
 

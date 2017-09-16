@@ -48,6 +48,9 @@ service Switchboard {
 
   // Registers and starts a server.
   rpc ServerStart(ServerStartRequest) returns (ServerStartResponse);
+
+  // Returns a listing of all servers, egresses and resolvers.
+  rpc List(ListRequest) returns (ListResponse);
 }
 
 // RPCs allowed to be performed on a switchboard connection.
@@ -57,6 +60,7 @@ enum Right {
   INGRESS_CONNECT = 2;
   RESOLVER_START = 3;
   SERVER_START = 4;
+  LIST = 5;
 }
 
 message ConstrainRequest {
@@ -138,4 +142,21 @@ message ServerStartResponse {
   // A new RPC channel to which the switchboard will send connection
   // requests for every matching connection attempt it receives.
   fd server = 1;
+}
+
+message ListRequest {
+  // Additional labels that should be attached when filtering.
+  map<string, string> out_labels = 3;
+}
+
+message ListResponse {
+  // Targets currently registered on the switchboard and are matched.
+  repeated TargetInfo targets = 1;
+}
+
+message TargetInfo {
+  // Labels of the registered egress or server.
+  map<string, string> labels = 1;
+
+  // TODO(ed): Export additional info, such as connection counters?
 }

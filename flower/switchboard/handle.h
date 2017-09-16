@@ -34,6 +34,7 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
             protocol::switchboard::Right::CLIENT_CONNECT,
             protocol::switchboard::Right::EGRESS_START,
             protocol::switchboard::Right::INGRESS_CONNECT,
+            protocol::switchboard::Right::LIST,
             protocol::switchboard::Right::RESOLVER_START,
             protocol::switchboard::Right::SERVER_START,
         }) {
@@ -64,6 +65,10 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
       arpc::ServerContext* context,
       const protocol::switchboard::ServerStartRequest* request,
       protocol::switchboard::ServerStartResponse* response) override;
+
+  arpc::Status List(arpc::ServerContext* context,
+                    const protocol::switchboard::ListRequest* request,
+                    protocol::switchboard::ListResponse* response) override;
 
  private:
   // Constructs a handle to a switchboard with limited access.

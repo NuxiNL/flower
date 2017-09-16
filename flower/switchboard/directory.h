@@ -14,6 +14,7 @@
 
 #include <arpc++/arpc++.h>
 
+#include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/listener.h>
 #include <flower/util/label_map.h>
 
@@ -28,6 +29,9 @@ class Directory {
   arpc::Status Register(const util::LabelMap& in_labels, const Target& target);
   arpc::Status Lookup(const util::LabelMap& out_labels,
                       util::LabelMap* connection_labels, Target* target);
+
+  void List(const util::LabelMap& out_labels,
+            protocol::switchboard::ListResponse* response);
 
  private:
   void PruneDeadTargets();

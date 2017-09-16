@@ -9,11 +9,13 @@
 #include <thread>
 #include <utility>
 
+#include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
 #include <flower/util/label_map.h>
 
 using arpc::Status;
 using arpc::StatusCode;
+using flower::protocol::switchboard::ListResponse;
 using flower::switchboard::Directory;
 using flower::switchboard::Listener;
 using flower::util::LabelMap;
@@ -87,4 +89,17 @@ void Directory::PruneDeadTargets() {
             return std::get<std::shared_ptr<Listener>>(target.second)->IsDead();
           }),
       targets_.end());
+}
+
+void Directory::List(const LabelMap& out_labels, ListResponse* response) {
+  std::unique_lock<std::mutex> lock(lock_);
+  PruneDeadTargets();
+
+  for (const auto& target : targets_) {
+    LabelMap merged;
+    LabelVector conflicts;
+    MergeLabelMaps(out_labels, target.first, &merged, &conflicts);
+    if (conflicts.empty())
+      *response->add_targets()->mutable_labels() = target.first;
+  }
 }
