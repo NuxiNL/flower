@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     configuration.set_logger_output(
         std::make_unique<FileDescriptor>(STDERR_FILENO));
     // TODO(ed): Make this configurable.
-    configuration.set_worker_pool_size(10);
+    configuration.set_worker_pool_size(100);
   }
   Start(configuration);
 }
