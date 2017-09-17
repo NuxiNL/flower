@@ -28,6 +28,7 @@
 
 using arpc::FileDescriptor;
 using arpc::ServerContext;
+using arpc::ServerWriter;
 using arpc::Status;
 using arpc::StatusCode;
 using flower::protocol::switchboard::ClientConnectRequest;
@@ -192,7 +193,7 @@ Status Handle::ServerStart(ServerContext* context,
 }
 
 Status Handle::List(ServerContext* context, const ListRequest* request,
-                    ListResponse* response) {
+                    ServerWriter<ListResponse>* writer) {
   if (Status status = CheckRights_({Right::LIST}); !status.ok())
     return status;
   LabelMap out_labels;
@@ -200,7 +201,10 @@ Status Handle::List(ServerContext* context, const ListRequest* request,
       !status.ok())
     return status;
 
-  directory_->List(out_labels, response);
+  std::vector<ListResponse> targets;
+  directory_->List(out_labels, &targets);
+  for (const ListResponse& target : targets)
+    writer->Write(target);
   return Status::OK;
 }
 

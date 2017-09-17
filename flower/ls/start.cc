@@ -18,11 +18,11 @@
 
 using arpc::Channel;
 using arpc::ClientContext;
+using arpc::ClientReader;
 using arpc::Status;
 using flower::protocol::switchboard::ListRequest;
 using flower::protocol::switchboard::ListResponse;
 using flower::protocol::switchboard::Switchboard;
-using flower::protocol::switchboard::TargetInfo;
 using flower::util::LabelMapToJson;
 using flower::util::Logger;
 using flower::util::fd_streambuf;
@@ -58,16 +58,18 @@ void flower::ls::Start(const Configuration& configuration) {
   std::unique_ptr<Switchboard::Stub> stub = Switchboard::NewStub(channel);
   ClientContext context;
   ListRequest request;
-  ListResponse response;
-  if (Status status = stub->List(&context, request, &response); !status.ok()) {
-    logger.Log() << status.error_message();
-    std::exit(1);
-  }
+  std::unique_ptr<ClientReader<ListResponse>> reader =
+      stub->List(&context, request);
 
   // Print the targets.
-  for (const TargetInfo& info : response.targets()) {
-    LabelMapToJson(info.labels(), &list_output);
+  for (ListResponse response; reader->Read(&response);) {
+    LabelMapToJson(response.labels(), &list_output);
     list_output << std::endl;
+  }
+
+  if (Status status = reader->Finish(); !status.ok()) {
+    logger.Log() << "Cannot start without a switchboard socket";
+    std::exit(1);
   }
   std::exit(0);
 }

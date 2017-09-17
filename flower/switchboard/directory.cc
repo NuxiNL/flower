@@ -8,6 +8,7 @@
 #include <sstream>
 #include <thread>
 #include <utility>
+#include <vector>
 
 #include <flower/protocol/switchboard.ad.h>
 #include <flower/switchboard/directory.h>
@@ -91,7 +92,8 @@ void Directory::PruneDeadTargets() {
       targets_.end());
 }
 
-void Directory::List(const LabelMap& out_labels, ListResponse* response) {
+void Directory::List(const LabelMap& out_labels,
+                     std::vector<ListResponse>* targets) {
   std::unique_lock<std::mutex> lock(lock_);
   PruneDeadTargets();
 
@@ -100,6 +102,6 @@ void Directory::List(const LabelMap& out_labels, ListResponse* response) {
     LabelVector conflicts;
     MergeLabelMaps(out_labels, target.first, &merged, &conflicts);
     if (conflicts.empty())
-      *response->add_targets()->mutable_labels() = target.first;
+      *targets->emplace_back().mutable_labels() = target.first;
   }
 }

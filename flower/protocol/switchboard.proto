@@ -50,7 +50,7 @@ service Switchboard {
   rpc ServerStart(ServerStartRequest) returns (ServerStartResponse);
 
   // Returns a listing of all servers, egresses and resolvers.
-  rpc List(ListRequest) returns (ListResponse);
+  rpc List(ListRequest) returns (stream ListResponse);
 }
 
 // RPCs allowed to be performed on a switchboard connection.
@@ -150,13 +150,6 @@ message ListRequest {
 }
 
 message ListResponse {
-  // Targets currently registered on the switchboard and are matched.
-  repeated TargetInfo targets = 1;
-}
-
-message TargetInfo {
-  // Labels of the registered egress or server.
+  // Labels of a registered egress or server.
   map<string, string> labels = 1;
-
-  // TODO(ed): Export additional info, such as connection counters?
 }

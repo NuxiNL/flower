@@ -31,7 +31,7 @@ class Directory {
                       util::LabelMap* connection_labels, Target* target);
 
   void List(const util::LabelMap& out_labels,
-            protocol::switchboard::ListResponse* response);
+            std::vector<protocol::switchboard::ListResponse>* targets);
 
  private:
   void PruneDeadTargets();

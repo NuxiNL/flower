@@ -66,9 +66,10 @@ class Handle final : public protocol::switchboard::Switchboard::Service {
       const protocol::switchboard::ServerStartRequest* request,
       protocol::switchboard::ServerStartResponse* response) override;
 
-  arpc::Status List(arpc::ServerContext* context,
-                    const protocol::switchboard::ListRequest* request,
-                    protocol::switchboard::ListResponse* response) override;
+  arpc::Status List(
+      arpc::ServerContext* context,
+      const protocol::switchboard::ListRequest* request,
+      arpc::ServerWriter<protocol::switchboard::ListResponse>* writer) override;
 
  private:
   // Constructs a handle to a switchboard with limited access.
