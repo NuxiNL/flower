@@ -36,14 +36,13 @@ using flower::protocol::egress::ConnectResponse;
 using flower::protocol::egress::Egress;
 using flower::protocol::switchboard::EgressStartRequest;
 using flower::protocol::switchboard::EgressStartResponse;
-using flower::protocol::switchboard::EgressStartResponse;
 using flower::protocol::switchboard::Switchboard;
 using flower::util::AddrinfoDeleter;
 using flower::util::CreateSocket;
+using flower::util::fd_streambuf;
 using flower::util::GetAddrinfo;
 using flower::util::InitializeSockaddrUn;
 using flower::util::Logger;
-using flower::util::fd_streambuf;
 using flower::util::null_streambuf;
 
 namespace {

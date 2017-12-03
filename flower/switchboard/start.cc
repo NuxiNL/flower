@@ -27,8 +27,8 @@ using flower::switchboard::TargetPicker;
 #ifndef __CloudABI__
 using flower::util::AcceptSocketConnection;
 #endif
-using flower::util::Logger;
 using flower::util::fd_streambuf;
+using flower::util::Logger;
 using flower::util::null_streambuf;
 
 void flower::switchboard::Start(const Configuration& configuration) {

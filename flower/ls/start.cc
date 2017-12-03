@@ -22,9 +22,9 @@ using arpc::Status;
 using flower::protocol::switchboard::ListRequest;
 using flower::protocol::switchboard::ListResponse;
 using flower::protocol::switchboard::Switchboard;
+using flower::util::fd_streambuf;
 using flower::util::LabelMapToJson;
 using flower::util::Logger;
-using flower::util::fd_streambuf;
 using flower::util::null_streambuf;
 
 void flower::ls::Start(const Configuration& configuration) {

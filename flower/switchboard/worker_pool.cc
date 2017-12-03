@@ -34,7 +34,7 @@ Status WorkerPool::StartWorker(
 
   try {
     // Attempt to create a new thread that processes incoming RPCs.
-    std::thread([ this, connection, service{std::move(service)} ]() {
+    std::thread([this, connection, service{std::move(service)}]() {
       ServerBuilder builder(connection);
       builder.RegisterService(service.get());
       std::shared_ptr<Server> server = builder.Build();

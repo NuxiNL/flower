@@ -37,10 +37,10 @@ using flower::protocol::switchboard::ClientConnectResponse;
 using flower::protocol::switchboard::ServerStartRequest;
 using flower::protocol::switchboard::ServerStartResponse;
 using flower::protocol::switchboard::Switchboard;
-using flower::util::LabelMapToJson;
-using flower::util::LogTransaction;
-using flower::util::Logger;
 using flower::util::fd_streambuf;
+using flower::util::LabelMapToJson;
+using flower::util::Logger;
+using flower::util::LogTransaction;
 using flower::util::null_streambuf;
 
 namespace {
