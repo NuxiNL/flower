@@ -12,7 +12,15 @@ target_link_libraries(
 	flower_ls
 	argdata
 	arpc
-	jsoncpp
+	${JSONCPP_LIBRARIES}
+)
+target_include_directories(
+	flower_ls
+	PUBLIC ${JSONCPP_INCLUDE_DIRS}
+)
+target_compile_options(
+	flower_ls
+	PUBLIC ${JSONCPP_CFLAGS_OTHER}
 )
 
 install(

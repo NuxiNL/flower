@@ -13,7 +13,15 @@ if(NOT HAVE_PROGRAM_MAIN)
 		flower_ingress_accept
 		argdata
 		arpc
-		jsoncpp
+		${JSONCPP_LIBRARIES}
+	)
+	target_include_directories(
+		flower_ingress_accept
+		PUBLIC ${JSONCPP_INCLUDE_DIRS}
+	)
+	target_compile_options(
+		flower_ingress_accept
+		PUBLIC ${JSONCPP_CFLAGS_OTHER}
 	)
 
 	install(

@@ -9,5 +9,13 @@ target_link_libraries(
 	arpc
 	argdata
 	gtest_main
-	jsoncpp
+	${JSONCPP_LIBRARIES}
+)
+target_include_directories(
+	flower_unittests
+	PUBLIC ${JSONCPP_INCLUDE_DIRS}
+)
+target_compile_options(
+	flower_unittests
+	PUBLIC ${JSONCPP_CFLAGS_OTHER}
 )

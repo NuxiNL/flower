@@ -11,7 +11,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(BUILD_TESTS "Build test programs, using Google Test" ON)
 
+find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
+
+pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 check_prototype_definition(program_main
 	"void program_main(const argdata_t *ad)"

@@ -16,6 +16,15 @@ add_library(
 
 add_aprotoc(flower/switchboard/configuration)
 
+target_include_directories(
+	flower_switchboard_lib
+	PUBLIC ${JSONCPP_INCLUDE_DIRS}
+)
+target_compile_options(
+	flower_switchboard_lib
+	PUBLIC ${JSONCPP_CFLAGS_OTHER}
+)
+
 add_executable(
 	flower_switchboard
 	flower/switchboard/${MAIN_SOURCEFILE}
@@ -27,7 +36,7 @@ target_link_libraries(
 	Threads::Threads
 	argdata
 	arpc
-	jsoncpp
+	${JSONCPP_LIBRARIES}
 )
 
 install(

@@ -14,7 +14,15 @@ target_link_libraries(
 	Threads::Threads
 	argdata
 	arpc
-	jsoncpp
+	${JSONCPP_LIBRARIES}
+)
+target_include_directories(
+	flower_cat
+	PUBLIC ${JSONCPP_INCLUDE_DIRS}
+)
+target_compile_options(
+	flower_cat
+	PUBLIC ${JSONCPP_CFLAGS_OTHER}
 )
 
 install(
