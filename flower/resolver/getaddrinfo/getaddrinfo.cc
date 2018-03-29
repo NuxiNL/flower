@@ -45,7 +45,7 @@ class GetaddrinfoResolver final : public Resolver::Service {
         !status.ok())
       return status;
     const char* service;
-    if (Status status = ExtractLabel(in_labels, "server_service", &hostname);
+    if (Status status = ExtractLabel(in_labels, "server_service", &service);
         !status.ok())
       return status;
 
