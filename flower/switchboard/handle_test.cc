@@ -152,16 +152,15 @@ class LabelEchoingServer final : public Server::Service {
  public:
   Status Connect(ServerContext* context, const ConnectRequest* request,
                  ConnectResponse* response) override {
-    std::thread(
-        [fd{request->client()}, labels{request->connection_labels()}]() {
-          std::ostringstream ss;
-          ss << "Got incoming connection with labels:" << std::endl;
-          for (const auto& label : labels)
-            ss << label.first << " " << label.second << std::endl;
-          std::string str = ss.str();
-          EXPECT_EQ(str.size(), write(fd->get(), str.data(), str.size()));
-        })
-        .detach();
+    std::thread([fd{request->client()},
+                 labels{request->connection_labels()}]() {
+      std::ostringstream ss;
+      ss << "Got incoming connection with labels:" << std::endl;
+      for (const auto& label : labels)
+        ss << label.first << " " << label.second << std::endl;
+      std::string str = ss.str();
+      EXPECT_EQ(str.size(), write(fd->get(), str.data(), str.size()));
+    }).detach();
     return Status::OK;
   }
 };

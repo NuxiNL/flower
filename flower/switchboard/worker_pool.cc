@@ -45,8 +45,7 @@ Status WorkerPool::StartWorker(
         logger_->Log() << "Failed to process incoming request: "
                        << std::strerror(error);
       DecrementWorkersRunning();
-    })
-        .detach();
+    }).detach();
   } catch (const std::system_error& e) {
     // Creation failed.
     DecrementWorkersRunning();
