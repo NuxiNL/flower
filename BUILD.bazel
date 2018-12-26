@@ -1,0 +1,34 @@
+load("@com_github_nuxinl_arpc//:aprotoc.bzl", "aprotoc")
+
+aprotoc(
+    name = "flower_protocol_egress",
+    src = "flower/protocol/egress.proto",
+)
+
+aprotoc(
+    name = "flower_protocol_resolver",
+    src = "flower/protocol/resolver.proto",
+)
+
+aprotoc(
+    name = "flower_protocol_server",
+    src = "flower/protocol/server.proto",
+)
+
+aprotoc(
+    name = "flower_protocol_switchboard",
+    src = "flower/protocol/switchboard.proto",
+)
+
+cc_library(
+    name = "flower_protocol",
+    hdrs = [
+        ":flower_protocol_egress",
+        ":flower_protocol_resolver",
+        ":flower_protocol_server",
+        ":flower_protocol_switchboard",
+    ],
+    include_prefix = ".",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_nuxinl_arpc//:arpc"],
+)
