@@ -10,7 +10,7 @@ git_repository(
 
 git_repository(
     name = "org_cloudabi_arpc",
-    commit = "58e54234bb0e493b9d3aca5ddc5f1e216083588e",
+    commit = "81305e311c0559fe7a64a98ce8ac1aa7051c7a4d",
     remote = "https://github.com/NuxiNL/arpc.git",
 )
 
