@@ -1,15 +1,15 @@
-workspace(name = "com_github_nuxinl_flower")
+workspace(name = "org_cloudabi_flower")
 
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
-    name = "com_github_nuxinl_argdata",
+    name = "org_cloudabi_argdata",
     commit = "6299455171a28831876d078c59a6634de6f6700b",
     remote = "https://github.com/NuxiNL/argdata.git",
 )
 
 git_repository(
-    name = "com_github_nuxinl_arpc",
+    name = "org_cloudabi_arpc",
     commit = "58e54234bb0e493b9d3aca5ddc5f1e216083588e",
     remote = "https://github.com/NuxiNL/arpc.git",
 )
@@ -30,7 +30,7 @@ pip_repositories()
 
 pip_import(
     name = "aprotoc_deps",
-    requirements = "@com_github_nuxinl_arpc//scripts:requirements.txt",
+    requirements = "@org_cloudabi_arpc//scripts:requirements.txt",
 )
 
 load("@aprotoc_deps//:requirements.bzl", "pip_install")

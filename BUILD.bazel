@@ -1,4 +1,4 @@
-load("@com_github_nuxinl_arpc//:aprotoc.bzl", "aprotoc")
+load("@org_cloudabi_arpc//:aprotoc.bzl", "aprotoc")
 
 aprotoc(
     name = "flower_protocol_egress",
@@ -30,5 +30,5 @@ cc_library(
     ],
     include_prefix = ".",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_nuxinl_arpc//:arpc"],
+    deps = ["@org_cloudabi_arpc//:arpc"],
 )
